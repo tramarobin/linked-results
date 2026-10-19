@@ -1,5 +1,7 @@
 # linked-results
 
+[![DOI](https://zenodo.org/badge/1426099161.svg)](https://doi.org/10.5281/zenodo.23483287)
+
 A skill for [Claude Code](https://claude.com/claude-code) (and a plain Python tool) that turns a study's
 data and its statistics into **one interactive HTML document**: methods, results texts, tables, violin and
 scatter plots with every participant, and each participant's values, all linked to one another.
@@ -106,7 +108,8 @@ The methods are the article's. The statistics differ slightly:
 
 If you use this skill, or share results built with it, please cite it:
 
-> Trama, R. (2026). *linked-results: interactive results documents from data and statistics* (Version 1.0.0) [Computer software]. https://github.com/tramarobin/linked-results
+> Trama, R. (2026). *linked-results: interactive results documents from data and statistics* (Version 1.0.0)
+> [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23483287
 
 GitHub's **Cite this repository** button (from [`CITATION.cff`](CITATION.cff)) gives the same reference in
 APA and BibTeX. In a paper or a shared document, a line such as *"Detailed results are available as an
