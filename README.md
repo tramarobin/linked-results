@@ -4,9 +4,10 @@ A skill for [Claude Code](https://claude.com/claude-code) (and a plain Python to
 data and its statistics into **one interactive HTML document**: methods, results texts, tables, violin and
 scatter plots with every participant, and each participant's values, all linked to one another.
 
-**Example:** [`example/muscle-vibration-results.html`](example/muscle-vibration-results.html), built from
-the data of Trama et al. (2021) in [`data/`](data). Download it and open it in any browser; it needs no
-internet connection.
+**Example: [open it online](https://tramarobin.github.io/linked-results/example/muscle-vibration-results.html)**,
+built from the data of Trama et al. (2021) in [`data/`](data). The file itself,
+[`example/muscle-vibration-results.html`](example/muscle-vibration-results.html), can also be downloaded and
+opened in any browser; it needs no internet connection.
 
 ## Why I made it
 
