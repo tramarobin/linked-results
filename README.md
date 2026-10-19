@@ -111,6 +111,9 @@ If you use this skill, or share results built with it, please cite it:
 > Trama, R. (2026). *linked-results: interactive results documents from data and statistics* (Version 1.0.0)
 > [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23483287
 
+This DOI covers all versions and always points to the latest. To cite version 1.0.0 itself, use
+[10.5281/zenodo.23483288](https://doi.org/10.5281/zenodo.23483288).
+
 GitHub's **Cite this repository** button (from [`CITATION.cff`](CITATION.cff)) gives the same reference in
 APA and BibTeX. In a paper or a shared document, a line such as *"Detailed results are available as an
 interactive document built with linked-results (Trama, 2026)"* is enough as an acknowledgement.
