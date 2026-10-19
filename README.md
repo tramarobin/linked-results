@@ -118,6 +118,9 @@ For the example data and methods, cite the article:
 > effective method to assess muscle vibrations in comparison to ultrafast ultrasonography? *IEEE
 > Transactions on Biomedical Engineering*. https://doi.org/10.1109/TBME.2020.3035838
 
+The author's version of the article is in this repository:
+[PDF](<Trama et al. - 2021 - Is accelerometry an effective method to assess muscle vibrations in comparison to ultrafast ultrasonography (author's version).pdf>).
+
 ## License
 
 The skill, its documentation and the example document are under the [MIT license](LICENSE). The example
