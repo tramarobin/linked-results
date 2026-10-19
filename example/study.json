@@ -1,0 +1,263 @@
+{
+  "title": "Muscle vibrations: accelerometry and ultrafast ultrasonography",
+  "file_name": "muscle-vibration-results",
+  "subtitle": "Vastus lateralis vibrations after an impact, measured with a skin-mounted accelerometer and with ultrafast ultrasonography in a relaxed and a contracted muscle ({n} participants). Every result of the extracted variables, with each participant's values.",
+  "footer": "Data and methods: Trama R, Hautier CA, Souron R, Lapole T, Fouré A, Blache Y (2021). Is accelerometry an effective method to assess muscle vibrations in comparison to ultrafast ultrasonography? <i>IEEE Transactions on Biomedical Engineering</i>, <a href=\"https://doi.org/10.1109/TBME.2020.3035838\">doi:10.1109/TBME.2020.3035838</a>. Document built with <a href=\"https://github.com/tramarobin/linked-results\">linked-results</a>.",
+  "data": {
+    "dir": "../data",
+    "format": "wide",
+    "id_column": 0,
+    "column_pattern": [
+      "Device",
+      "Activation",
+      "Axis"
+    ],
+    "separator": ".",
+    "participant_prefix": "P"
+  },
+  "participants": {
+    "file": "../data/participant_info.csv",
+    "id": "id",
+    "section": "Participants",
+    "categorical": [
+      {
+        "id": "sex",
+        "name": "Sex",
+        "levels": [
+          {
+            "code": "M",
+            "name": "man",
+            "plural": "men"
+          },
+          {
+            "code": "F",
+            "name": "woman",
+            "plural": "women"
+          }
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "id": "age",
+        "name": "Age",
+        "unit": "years",
+        "dec": 1
+      },
+      {
+        "id": "height",
+        "name": "Height",
+        "unit": "cm",
+        "dec": 0
+      },
+      {
+        "id": "mass",
+        "name": "Body mass",
+        "unit": "kg",
+        "dec": 1
+      },
+      {
+        "id": "fat_thickness",
+        "name": "Fat thickness",
+        "noun": "the fat thickness",
+        "unit": "mm",
+        "dec": 1
+      },
+      {
+        "id": "max_force",
+        "name": "Maximal force",
+        "unit": "N",
+        "dec": 0
+      }
+    ]
+  },
+  "stats": {
+    "file": "../data/stats.csv",
+    "alpha": 0.05
+  },
+  "correlations": {
+    "file": "../data/correlations.csv",
+    "x": "fat_thickness",
+    "outcomes": [
+      "peak_acceleration",
+      "main_frequency",
+      "median_frequency",
+      "damping"
+    ],
+    "by": "Activation",
+    "strength": [
+      [
+        0.8,
+        "very strong"
+      ],
+      [
+        0.6,
+        "strong"
+      ]
+    ]
+  },
+  "factors": [
+    {
+      "id": "Device",
+      "name": "Device",
+      "noun": "device",
+      "plural": "devices",
+      "within": true,
+      "reference": "Echo",
+      "levels": [
+        {
+          "code": "Echo",
+          "name": "Ultrasonography",
+          "short": "US",
+          "phrase": "with ultrasonography",
+          "color": "#2a78d6",
+          "color_dark": "#3987e5"
+        },
+        {
+          "code": "ACC",
+          "name": "Accelerometry",
+          "short": "ACC",
+          "phrase": "with accelerometry",
+          "color": "#eb6834",
+          "color_dark": "#d95926"
+        }
+      ]
+    },
+    {
+      "id": "Activation",
+      "name": "Activation",
+      "noun": "activation level",
+      "plural": "activation levels",
+      "within": true,
+      "reference": "R",
+      "levels": [
+        {
+          "code": "R",
+          "name": "Relaxed",
+          "short": "Relaxed",
+          "phrase": "in the relaxed muscle",
+          "color": "#1baf7a",
+          "color_dark": "#199e70"
+        },
+        {
+          "code": "C",
+          "name": "Contracted",
+          "short": "Contracted",
+          "phrase": "in the contracted muscle",
+          "color": "#6250d6",
+          "color_dark": "#9085e9"
+        }
+      ]
+    }
+  ],
+  "split": {
+    "id": "Axis",
+    "name": "Axis",
+    "levels": [
+      {
+        "code": "L",
+        "name": "Lateral",
+        "long": "Lateral (mediolateral) axis"
+      },
+      {
+        "code": "V",
+        "name": "Vertical",
+        "long": "Vertical (anteroposterior) axis"
+      }
+    ]
+  },
+  "outcomes": [
+    {
+      "id": "peak_acceleration",
+      "file": "peak_acceleration.csv",
+      "name": "Peak acceleration",
+      "noun": "the peak acceleration",
+      "unit": "m·s⁻²",
+      "dec": 1
+    },
+    {
+      "id": "main_frequency",
+      "file": "main_frequency.csv",
+      "name": "Main frequency",
+      "noun": "the main frequency",
+      "unit": "Hz",
+      "dec": 1
+    },
+    {
+      "id": "median_frequency",
+      "file": "median_frequency.csv",
+      "name": "Median frequency",
+      "noun": "the median frequency",
+      "unit": "Hz",
+      "dec": 1
+    },
+    {
+      "id": "damping",
+      "file": "damping.csv",
+      "name": "Damping",
+      "noun": "damping",
+      "unit": "s⁻¹",
+      "dec": 1
+    },
+    {
+      "id": "emg",
+      "file": "emg.csv",
+      "name": "Vastus lateralis activation",
+      "noun": "the activation",
+      "unit": "% of maximal",
+      "dec": 1,
+      "split": false,
+      "fixed": {
+        "Axis": "L"
+      },
+      "relative": false
+    }
+  ],
+  "results": [
+    {
+      "label": "Vibrations",
+      "tabs": [
+        {
+          "label": "Peak acceleration",
+          "outcomes": [
+            "peak_acceleration"
+          ]
+        },
+        {
+          "label": "Main frequency",
+          "outcomes": [
+            "main_frequency"
+          ]
+        },
+        {
+          "label": "Median frequency",
+          "outcomes": [
+            "median_frequency"
+          ]
+        },
+        {
+          "label": "Damping",
+          "outcomes": [
+            "damping"
+          ]
+        },
+        {
+          "label": "Correlation with fat thickness",
+          "correlations": true
+        }
+      ]
+    },
+    {
+      "label": "EMG",
+      "tabs": [
+        {
+          "label": "Activation",
+          "outcomes": [
+            "emg"
+          ]
+        }
+      ]
+    }
+  ],
+  "methods": "methods.md"
+}

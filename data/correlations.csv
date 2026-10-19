@@ -1,0 +1,17 @@
+x,outcome,split,at,y,method,r,p,p_uncorrected,slope,intercept,n,family,family_of,correction
+fat_thickness,peak_acceleration,L,Activation=R,rel:Device=ACC~Echo,pearson,-0.2176210281,1,0.4359027949,-1.898033954,-7.171447321,15,8,split,holm
+fat_thickness,peak_acceleration,L,Activation=C,rel:Device=ACC~Echo,pearson,0.4832220313,0.544331566,0.06804144575,5.883487631,-80.89602016,15,8,split,holm
+fat_thickness,peak_acceleration,V,Activation=R,rel:Device=ACC~Echo,pearson,0.06059970034,1,0.8301289739,2.199742932,164.338457,15,8,split,holm
+fat_thickness,peak_acceleration,V,Activation=C,rel:Device=ACC~Echo,pearson,0.2816056668,0.9277378677,0.3092459559,11.62375851,36.85767189,15,8,split,holm
+fat_thickness,main_frequency,L,Activation=R,rel:Device=ACC~Echo,pearson,0.3035285729,1,0.2714269039,1.845848053,-49.54876156,15,8,split,holm
+fat_thickness,main_frequency,L,Activation=C,rel:Device=ACC~Echo,pearson,-0.09779628599,1,0.7287890809,-0.3335440857,-44.80820758,15,8,split,holm
+fat_thickness,main_frequency,V,Activation=R,rel:Device=ACC~Echo,pearson,-0.5175801323,0.1925784296,0.04814460739,-2.083590251,9.791543538,15,8,split,holm
+fat_thickness,main_frequency,V,Activation=C,rel:Device=ACC~Echo,pearson,-0.7666422408,0.005131325214,0.0008552208691,-3.440626227,19.11770872,15,8,split,holm
+fat_thickness,median_frequency,L,Activation=R,rel:Device=ACC~Echo,pearson,-0.01359272256,1,0.9616533477,-0.05498771664,-13.46844362,15,8,split,holm
+fat_thickness,median_frequency,L,Activation=C,rel:Device=ACC~Echo,pearson,-0.151916173,1,0.588866554,-0.3012965751,-23.82855848,15,8,split,holm
+fat_thickness,median_frequency,V,Activation=R,rel:Device=ACC~Echo,pearson,-0.8261462564,0.001178073953,0.0001472592441,-2.321592064,9.908217693,15,8,split,holm
+fat_thickness,median_frequency,V,Activation=C,rel:Device=ACC~Echo,pearson,-0.6755524026,0.02854359264,0.005708718528,-1.733650807,5.223185677,15,8,split,holm
+fat_thickness,damping,L,Activation=R,rel:Device=ACC~Echo,pearson,0.2380302543,1,0.3929455233,1.056427234,-49.45110119,15,8,split,holm
+fat_thickness,damping,L,Activation=C,rel:Device=ACC~Echo,pearson,-0.1908325106,1,0.4956975276,-0.6672282688,-26.45722,15,8,split,holm
+fat_thickness,damping,V,Activation=R,rel:Device=ACC~Echo,pearson,-0.7920855125,0.003020761456,0.0004315373509,-3.412089323,23.94410729,15,8,split,holm
+fat_thickness,damping,V,Activation=C,rel:Device=ACC~Echo,pearson,0.05550251304,1,0.8442488402,0.4066548291,-16.72801859,15,8,split,holm

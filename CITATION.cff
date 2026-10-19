@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this skill, or share results built with it, please cite it as below."
+title: "linked-results: interactive results documents from data and statistics"
+type: software
+authors:
+  - family-names: Trama
+    given-names: Robin
+version: 1.0.0
+license: MIT
+date-released: 2026-10-19
+repository-code: "https://github.com/tramarobin/linked-results"
+keywords:
+  - statistics
+  - results reporting
+  - interactive document
+  - data sharing
+  - Claude Code skill
+references:
+  - type: article
+    title: "Is accelerometry an effective method to assess muscle vibrations in comparison to ultrafast ultrasonography?"
+    authors:
+      - family-names: Trama
+        given-names: Robin
+      - family-names: Hautier
+        given-names: Christophe A.
+      - family-names: Souron
+        given-names: Robin
+      - family-names: Lapole
+        given-names: Thomas
+      - family-names: Fouré
+        given-names: Alexandre
+      - family-names: Blache
+        given-names: Yoann
+    journal: "IEEE Transactions on Biomedical Engineering"
+    year: 2021
+    doi: 10.1109/TBME.2020.3035838

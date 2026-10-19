@@ -1,0 +1,1316 @@
+<!doctype html>
+<!-- Template of a linked results document. build_document.py replaces DATA (the rows, statistics,
+     texts and methods) and the title, and removes these comments. JavaScript comments ship with the page. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f7f9; --surface: #ffffff; --ink: #16191d; --ink-2: #454b54; --muted: #6b717a;
+    --line: #c9cdd3; --grid: #e6e8eb; --rule: #16191d; --focus: #111418; --chip: #eceef1;
+    --chip-on: #16191d; --chip-on-ink: #ffffff; --row: #eef1f5; --hl: #d7263d; --shade: rgba(0,0,0,.18);
+    --sel-soft: #eaf1f9; --sel: #d6e3f2; --lift: #ffffff; --lift-sh: rgba(0, 35, 80, .28); --lift-sh2: rgba(0, 35, 80, .42);
+    --pline: #a6a6a6; --cross: #3d3d3d; --link: #1f5fbf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #121417; --surface: #1b1e22; --ink: #e9ebee; --ink-2: #b9bec5; --muted: #8e959e;
+      --line: #454b53; --grid: #2b2f35; --rule: #e9ebee; --focus: #ffffff; --chip: #262a30;
+      --chip-on: #e9ebee; --chip-on-ink: #121417; --row: #262a30; --hl: #ff5a6e; --shade: rgba(0,0,0,.6);
+      --sel-soft: #22303f; --sel: #2e4560; --lift: #2a3038; --lift-sh: rgba(0, 0, 0, .6); --lift-sh2: rgba(0, 0, 0, .85);
+      --pline: #5a5f66; --cross: #c9cdd3; --link: #7fb0ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121417; --surface: #1b1e22; --ink: #e9ebee; --ink-2: #b9bec5; --muted: #8e959e;
+    --line: #454b53; --grid: #2b2f35; --rule: #e9ebee; --focus: #ffffff; --chip: #262a30;
+    --chip-on: #e9ebee; --chip-on-ink: #121417; --row: #262a30; --hl: #ff5a6e; --shade: rgba(0,0,0,.6);
+    --sel-soft: #22303f; --sel: #2e4560; --lift: #2a3038; --lift-sh: rgba(0, 0, 0, .6); --lift-sh2: rgba(0, 0, 0, .85);
+      --pline: #5a5f66; --cross: #c9cdd3; --link: #7fb0ff;
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .top { position: sticky; top: 0; z-index: 20; display: flex; align-items: stretch; gap: 4px; min-height: 52px;
+         padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; margin: 0 18px 0 0; padding: 8px 22px 8px 0; border-right: 1px solid var(--line);
+           font-size: 16px; font-weight: 700; line-height: 1.25; max-width: 520px; }
+  .top nav { display: flex; align-items: stretch; gap: 2px; }
+  .tab { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13.5px; font-weight: 650;
+         letter-spacing: .09em; text-transform: uppercase; padding: 0 16px; cursor: pointer;
+         border-bottom: 3px solid transparent; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  .wrap { max-width: 1900px; margin: 0 auto; padding: 0 24px; }
+  .sub { color: var(--ink-2); margin: 14px 0 2px; max-width: 1060px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 10px; }
+  .controls .lab { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; min-width: 64px; }
+  .chip { border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+          border-radius: 999px; padding: 5px 13px; font: inherit; cursor: pointer; }
+  .chip:hover { border-color: var(--ink-2); }
+  .chip[aria-pressed="true"] { background: var(--chip-on); color: var(--chip-on-ink); border-color: var(--chip-on); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 12px 0 24px; align-items: start; }
+  main.methods aside { display: none; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin-bottom: 14px; }
+  .box h2 { font-size: 15px; font-weight: 650; margin: 0 0 8px; }
+  .prose { max-width: 1060px; }
+  .prose h2 { font-size: 16px; margin: 14px 0 6px; }
+  .prose h2:first-child { margin-top: 2px; }
+  .prose p { margin: 0 0 9px; }
+  .results p { margin: 0 0 8px; max-width: 1100px; }
+  .results p:last-child { margin-bottom: 0; }
+  /* a statistic of a text: linked to its table and figure */
+  .ref { border-bottom: 1px dotted color-mix(in srgb, var(--link) 60%, transparent); border-radius: 3px; cursor: pointer;
+          transition: background-color .12s; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .ref:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  /* the house style of a marked statistic: soft blue when hovered, deeper when kept (pinned) */
+  .ref.hov { background: var(--sel-soft); box-shadow: 0 0 0 2px var(--sel-soft); }
+  .ref.on, .ref.pinned { background: var(--sel); box-shadow: 0 0 0 2px var(--sel); }
+  .tablebox { overflow-x: auto; }
+  table.t { border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  table.t th, table.t td { padding: 4px 8px; white-space: nowrap; }
+  table.t thead tr:first-child th { border-top: 2px solid var(--rule); font-weight: 650; }
+  table.t thead tr:last-child th { border-bottom: 1.5px solid var(--rule); font-weight: 500; color: var(--ink-2); font-size: 12px; }
+  table.t th { text-align: center; }
+  table.t th:first-child, table.t td:first-child { text-align: left; }
+  table.t td { text-align: center; }
+  table.t td.u { color: var(--ink-2); }
+  table.t tbody tr:last-child td { border-bottom: 2px solid var(--rule); }
+  table.t tr.data { cursor: pointer; }
+  table.t tr.data:hover td { background: var(--row); }
+  table.t tr.data.cur td:first-child { box-shadow: inset 3px 0 0 var(--ink-2); }
+  table.t td.k { cursor: pointer; }
+  table.t td.hov { background: var(--sel-soft) !important; }
+  table.t td.on, table.t td.pinned { background: var(--sel) !important; }
+  table.t .b, table.s .b { font-weight: 700; }
+  .key { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  .note { color: var(--muted); font-size: 12px; margin: 8px 0 0; max-width: 1100px; }
+  /* a table wider than its box: an arrow each side on hover, a click scrolls it */
+  .hscroll { position: relative; }
+  .harrow { position: absolute; z-index: 4; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; padding: 0;
+            display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line);
+            background: var(--surface); color: var(--ink); box-shadow: 0 2px 8px var(--shade); cursor: pointer;
+            opacity: 0; pointer-events: none; transition: opacity .15s; }
+  .harrow.l { left: 6px; } .harrow.r { right: 6px; }
+  .hscroll.canl:hover .harrow.l, .hscroll.canr:hover .harrow.r { opacity: .94; pointer-events: auto; }
+  details.box > summary { cursor: pointer; font-weight: 650; font-size: 15px; }
+  details.box[open] > summary { margin-bottom: 8px; }
+  table.pp td, table.pp th { padding: 3px 8px; }
+  table.pp td.g0, table.pp th.g0 { border-left: 1px solid var(--line); }
+  table.pp td.sh, table.pp th.sh { background: color-mix(in srgb, var(--row) 70%, transparent); }
+  table.pp tbody tr:hover td, table.pp tbody tr.hl td { background: var(--row); }
+  table.pp tbody tr.hl td:first-child { color: var(--hl); font-weight: 700; }
+  .btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px;
+         padding: 4px 12px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .btn:hover { background: var(--chip); }
+  /* the figure and statistics panel */
+  aside { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .kicker { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  aside h3 { font-size: 16px; margin: 2px 0 6px; font-weight: 650; }
+  .hint { color: var(--muted); font-size: 12px; margin: 0 0 6px; }
+  .figwrap { position: relative; }
+  .fig svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .fig text { font-family: inherit; }
+  .fig .tick { fill: var(--ink-2); }
+  .fig .ttl { fill: var(--ink); font-weight: 650; }
+  .fig .cap { fill: var(--ink-2); }
+  .fig .cap .b { font-weight: 700; fill: var(--ink); }
+  .fig .grid { stroke: var(--grid); }
+  .fig .zero { stroke: var(--muted); stroke-dasharray: 3 3; }
+  .fig .axis { stroke: var(--line); }
+  .fig .pl { fill: var(--ink); }
+  .fig .pl.ns { fill: var(--muted); }
+  .fig .br { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+  .fig .out { opacity: .42; }
+  .fig .mean { stroke: var(--ink); stroke-width: 2.6; stroke-linecap: round; pointer-events: none; }
+  .fig .sdc { fill: none; stroke-width: 3.2; stroke-linejoin: round; stroke-linecap: round; }
+  .fig .mv { fill: var(--ink); stroke: var(--surface); pointer-events: none; }
+  .fig .pline { fill: none; stroke: var(--pline); stroke-width: .8; }
+  .fig .pline.hl { stroke: var(--ink); stroke-width: 2; }
+  .fig .ind { stroke: var(--cross); stroke-width: 1.3; }
+  .fig .ind.hl { stroke: var(--ink); stroke-width: 2.8; }
+  .fig .ring { display: none; }
+  .fig g.pt.hov .ind, .fig g.pt.on .ind { stroke: var(--ink); stroke-width: 2.6; }
+  .fig .fit { fill: none; stroke: var(--ink); stroke-width: 2; }
+  .fig .fit.ns { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .fig .stl { fill: var(--ink-2); }
+  .fig .stl.b { fill: var(--ink); font-weight: 700; }
+  .pblock { margin: 6px 0 14px; padding: 10px 0 2px; border-top: 1px solid var(--grid); border-bottom: 1px solid var(--grid); }
+  .pblock h3 { font-size: 14px; margin: 0 0 6px; }
+  .pblock .tablebox { margin-bottom: 8px; }
+  .pblock table.t tr[data-k] { cursor: pointer; }
+  .pblock table.t tr.hov td { background: var(--sel-soft); }
+  .pblock table.t tr.on td, .pblock table.t tr.pinned td { background: var(--sel); }
+  .pblock details > summary { cursor: pointer; font-weight: 600; margin: 6px 0; }
+  /* a citation: its reference in a popover; the citation and its entry in the list mark each other */
+  .cite { border-bottom: 1.5px dotted color-mix(in srgb, var(--link) 75%, transparent); border-radius: 3px; cursor: pointer;
+          transition: background-color .12s; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .cite.chov, .refentry.chov { background: var(--sel-soft); box-shadow: 0 0 0 2px var(--sel-soft); }
+  .cite.cpin { background: var(--sel); box-shadow: 0 0 0 2px var(--sel); }
+  .refentry { border-radius: 3px; transition: background-color .12s; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .pop { position: absolute; z-index: 30; background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+         border-radius: 8px; box-shadow: 0 10px 34px var(--shade); padding: 9px 12px 10px; font-size: 13px; line-height: 1.45; }
+  .pop.pinned { border-color: color-mix(in srgb, var(--link) 60%, var(--line)); }
+  .pop .x { float: right; margin: -4px -6px 0 8px; border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+  .fig .hit { fill: transparent; cursor: default; }
+  .fig .pbg, .fig .vbg { fill: transparent; }
+  /* a marked panel or violin is lifted: a card on a soft shadow, deeper when kept (pinned) */
+  .fig .pbg.hov, .fig .vbg.hov { fill: var(--lift); filter: drop-shadow(0 1px 5px var(--lift-sh)); }
+  .fig .pbg.on, .fig .vbg.on, .fig .pbg.pinned, .fig .vbg.pinned { fill: var(--lift); filter: drop-shadow(0 2px 9px var(--lift-sh2)); }
+  .fig .sbg { fill: transparent; }
+  .fig .brk.hov .br, .fig .brk.on .br { stroke-width: 2.4; }
+  .fig .brk.hov .sbg { fill: var(--sel-soft); }
+  .fig .brk.on .sbg { fill: var(--sel); }
+  .tt { position: absolute; pointer-events: none; background: var(--surface); color: var(--ink);
+        border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font-size: 12px; line-height: 1.4;
+        box-shadow: 0 2px 10px var(--shade); white-space: normal; max-width: min(380px, 92%); display: none; z-index: 6; }
+  .tt .m { color: var(--muted); }
+  .grow { position: absolute; top: 0; right: 0; z-index: 3; width: 28px; height: 28px; padding: 0; border-radius: 6px;
+          border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; opacity: .55;
+          font-size: 15px; line-height: 1; }
+  .grow:hover, .grow:focus-visible { opacity: 1; }
+  .figkey { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+  .stats h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; margin: 14px 0 4px; }
+  table.s { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  table.s th, table.s td { padding: 3px 7px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  table.s th:first-child, table.s td:first-child { text-align: left; white-space: normal; }
+  table.s thead th { color: var(--muted); font-weight: 500; font-size: 11.5px; }
+  table.s tr[data-k] { cursor: pointer; }
+  table.s tr[data-k]:hover td { background: var(--row); }
+  table.s tr.hov td { background: var(--sel-soft) !important; }
+  table.s tr.on td, table.s tr.pinned td { background: var(--sel) !important; }
+  table.s tr.sub td { color: var(--ink-2); font-size: 12px; text-align: left; padding-top: 7px; border-bottom: 1px solid var(--line); }
+  table.s tr.outr td { color: var(--muted); }
+  .snote { color: var(--muted); font-size: 11.5px; margin: 4px 0 0; }
+  .pbar { display: none; }
+  @media (min-width: 1400px) {
+    main:not(.methods) { grid-template-columns: minmax(0, 1fr) 560px; }
+    aside { position: sticky; top: 64px; max-height: calc(100vh - 76px); overflow: auto; }
+  }
+  @media (max-width: 1399px) {
+    aside { position: sticky; bottom: 0; max-height: 50vh; overflow: auto; box-shadow: 0 -4px 16px var(--shade); }
+    .pbar { display: flex; align-items: center; gap: 10px; position: sticky; top: -12px; z-index: 5;
+            margin: -12px -14px 8px; padding: 6px 10px 6px 14px; background: var(--surface);
+            border-bottom: 1px solid var(--grid); border-radius: 8px 8px 0 0; }
+    aside.collapsed { overflow: hidden; }
+    aside.collapsed #panelBody { display: none; }
+    aside.collapsed .pbar { margin-bottom: -12px; border-bottom: 0; border-radius: 8px; }
+  }
+  .ptitle { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  dialog.big { width: min(1200px, 94vw); max-height: 92vh; border: 1px solid var(--line); border-radius: 10px;
+               background: var(--surface); color: var(--ink); padding: 12px 16px 16px; }
+  dialog.big::backdrop { background: rgba(0, 0, 0, .45); }
+  .dhead { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .dhead h3 { flex: 1; margin: 0; font-size: 16px; }
+  footer { color: var(--muted); font-size: 12px; padding: 4px 0 28px; max-width: 1100px; }
+  .stats { overflow-x: auto; }
+  @media (max-width: 700px) {
+    table.s th, table.s td { padding: 3px 4px; }
+    table.s thead th { white-space: normal; }
+    .wrap { padding: 0 16px; }
+    .top { padding: 0 12px; flex-wrap: wrap; }
+    .brand { border-right: 0; padding-right: 0; margin-right: 0; width: 100%; font-size: 15px; }
+    .tab { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="brand" id="brand"></h1>
+  <nav role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tabMethods" type="button">Methods</button>
+    <button class="tab" role="tab" id="tabResults" type="button">Results</button>
+  </nav>
+</header>
+<div class="wrap">
+  <p class="sub" id="sub"></p>
+  <div class="controls" id="groupbar" role="toolbar" aria-label="Results"><span class="lab">Results</span><span id="groups"></span></div>
+  <div class="controls" id="tabbar" role="toolbar" aria-label="Variable"><span class="lab">Variable</span><span id="tabs"></span></div>
+  <main id="main">
+    <div id="content"></div>
+    <aside id="panel" aria-label="Figure and statistics">
+      <div class="pbar"><span class="ptitle" id="ptitle">Figure and statistics</span>
+        <button class="btn" id="pToggle" type="button" aria-expanded="true" aria-controls="panelBody">Hide figure</button></div>
+      <div id="panelBody" aria-live="polite"></div>
+    </aside>
+  </main>
+  <footer id="foot"></footer>
+</div>
+<dialog class="big" id="big" aria-labelledby="bigTitle">
+  <div class="dhead"><h3 id="bigTitle"></h3><button class="btn" id="bigClose" type="button">Close</button></div>
+  <div id="bigBody"></div>
+</dialog>
+
+<script>
+const DATA = /*DATA*/;
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const S = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+const html = (tag, cls, h) => { const e = $(tag, cls); e.innerHTML = h; return e; };
+const MINUS = '−', TIMES = '×';
+const ALPHA = DATA.alpha;
+
+// ------------------------------------------------------------------ numbers (the texts are written the same way)
+const isNum = v => v !== null && v !== undefined && isFinite(v);
+function fx(v, d) {
+  if (!isNum(v)) return '–';
+  let s = v.toFixed(d);
+  if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
+  return s.replace('-', MINUS);
+}
+const sgn = (v, d) => { const s = fx(v, d); return !isNum(v) || s.startsWith(MINUS) || +s === 0 ? s : '+' + s; };
+const pfmt = p => !isNum(p) ? '–' : p < 0.001 ? '<0.001' : p.toFixed(3);
+const plab = p => p < 0.001 ? 'p < 0.001' : 'p = ' + p.toFixed(3);
+const withUnit = (s, u) => !u ? s : u.startsWith('%') ? s + u : s + ' ' + u;
+
+// ------------------------------------------------------------------ factors, levels and their colours
+const FAC = {}; DATA.factors.forEach(f => { FAC[f.id] = f; f.lv = {}; f.levels.forEach(L => { f.lv[L.code] = L; }); });
+const FIDS = DATA.factors.map(f => f.id);
+const cvar = (fid, code) => '--c-' + (fid + '-' + code).replace(/[^A-Za-z0-9_-]/g, '_');
+(() => {
+  const light = [], dark = [];
+  DATA.factors.forEach(f => f.levels.forEach(L => { light.push(cvar(f.id, L.code) + ':' + L.color); dark.push(cvar(f.id, L.code) + ':' + L.color_dark); }));
+  const st = document.createElement('style');
+  st.textContent = `:root{${light.join(';')}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${dark.join(';')}}}:root[data-theme="dark"]{${dark.join(';')}}`;
+  document.head.append(st);
+})();
+const col = (fid, code) => `var(${cvar(fid, code)})`;
+const DESIGN = (DATA.factors.length === 2 ? 'two-way ' : 'one-way ') +
+  (DATA.factors.every(f => f.within) ? 'repeated-measures ' : DATA.factors.some(f => f.within) ? 'mixed ' : '') + 'analysis of variance';
+const termName = t => t.split(':').map(x => FAC[x].name).join(' ' + TIMES + ' ');
+const cellName = (lv, sep) => FIDS.map(f => FAC[f].lv[lv[f]].name).join(sep || ' · ');
+const cellShort = lv => FIDS.map(f => FAC[f].lv[lv[f]].short).join(' · ');
+const ROWS = DATA.rows;
+const rowLabel = (R, multi) => multi ? R.name + (R.splitName ? ' · ' + R.splitName : '') : (R.splitName || R.name);
+
+// ------------------------------------------------------------------ linking: one key per statistic, marked everywhere
+// keys of a row: t:<term> (ANOVA), m:... and x:... (comparisons: a main effect, or inside an interaction),
+// cell:<code> (a condition), lv:<factor>=<level> (a level over the other factor)
+const compOf = (R, k) => (R.comps || []).find(c => c.key === k);
+function owner(R, k) { if (!R || !k) return null; const c = compOf(R, k); return c ? 't:' + c.term : null; }
+const related = (R, a, b) => a === b || owner(R, a) === b || owner(R, b) === a;
+let hov = null, pin = null, curRow = null;
+function paint() {
+  document.querySelectorAll('.hov, .on, .pinned').forEach(e => e.classList.remove('hov', 'on', 'pinned'));
+  const mark = (st, cls) => {
+    if (!st) return;
+    const R = ROWS[st.row];
+    document.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.row === st.row && related(R, st.key, e.dataset.k)) e.classList.add(cls); });
+    document.querySelectorAll('[data-ks]').forEach(e => { if (e.dataset.row === st.row && e.dataset.ks.split(' ').includes(st.key)) e.classList.add(cls); });
+  };
+  mark(pin, 'on');
+  if (pin) document.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.row === pin.row && e.dataset.k === pin.key && e === pin.el) e.classList.add('pinned'); });
+  if (pin) document.querySelectorAll('[data-ks]').forEach(e => { if (e.dataset.row === pin.row && e.dataset.ks.split(' ')[0] === pin.key) e.classList.add('pinned'); });
+  mark(hov, 'hov');
+  document.querySelectorAll('#content tr.data').forEach(tr => tr.classList.toggle('cur', tr.dataset.row === curRow));
+}
+function setHover(row, key) {
+  hov = row ? { row, key } : null;
+  if (row && !pin && row !== curRow) showRow(row);
+  paint();
+}
+let clickUsed = false;
+function toggle(row, key, el) {
+  clickUsed = true;
+  if (pin && pin.row === row && pin.key === key) { pin = null; paint(); return; }
+  pin = { row, key, el };
+  if (row !== curRow) showRow(row);
+  setCollapsed(false);
+  paint();
+}
+function release() { if (pin) { pin = null; paint(); } }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && pin && !document.getElementById('big').open) release(); });
+document.addEventListener('pointerdown', () => { clickUsed = false; }, true);
+document.addEventListener('click', e => {
+  if (clickUsed || !pin) return;
+  if (e.target.closest('button, a, input, select, summary, dialog, .chip, .harrow, .pbar')) return;
+  const s = window.getSelection(); if (s && !s.isCollapsed) return;
+  release();
+});
+// text spans, table cells and rows, statistics rows: data-row + data-k
+function linkable(e) { const el = e.target.closest('[data-k]'); return el && el.dataset.row ? el : null; }
+function wire(root) {
+  root.addEventListener('pointerover', e => { const el = linkable(e); if (el) setHover(el.dataset.row, el.dataset.k);
+    else { const tr = e.target.closest('tr.data'); if (tr) setHover(tr.dataset.row, null); } });
+  root.addEventListener('pointerout', e => { const el = linkable(e); if (el && !el.contains(e.relatedTarget)) setHover(null); });
+  root.addEventListener('focusin', e => { const el = linkable(e); if (el) setHover(el.dataset.row, el.dataset.k); });
+  root.addEventListener('click', e => { const el = linkable(e); if (el) { toggle(el.dataset.row, el.dataset.k, el); return; }
+    const tr = e.target.closest('tr.data'); if (tr) { clickUsed = true; if (!pin) showRow(tr.dataset.row); } });
+  root.addEventListener('keydown', e => { const el = linkable(e); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(el.dataset.row, el.dataset.k, el); } });
+}
+const linkAttrs = (el, row, key) => { el.dataset.row = row; el.dataset.k = key; el.tabIndex = 0; return el; };
+
+// ------------------------------------------------------------------ the violins
+function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); return [1, 2, 2.5, 5, 10].find(m => m * p >= raw * (1 - 1e-9)) * p; }
+// a group's distribution: Gaussian kernel density, Silverman's bandwidth, drawn over the data +/- half a bandwidth
+function kde(v) {
+  const n = v.length;
+  if (n < 3) return null;
+  const s = [...v].sort((x, y) => x - y);
+  const mu = s.reduce((x, y) => x + y, 0) / n;
+  const sd = Math.sqrt(s.reduce((x, y) => x + (y - mu) ** 2, 0) / (n - 1));
+  const q = f => { const i = (n - 1) * f, lo = Math.floor(i); return s[lo] + (s[Math.min(lo + 1, n - 1)] - s[lo]) * (i - lo); };
+  const iqr = q(0.75) - q(0.25);
+  const h = 0.9 * Math.min(sd, iqr > 0 ? iqr / 1.34 : sd) * Math.pow(n, -0.2);
+  if (!(h > 0)) return null;
+  const lo = s[0] - 0.5 * h, hi = s[n - 1] + 0.5 * h, K = 64, grid = [];
+  let dmax = 0;
+  for (let k = 0; k <= K; k++) {
+    const y = lo + (hi - lo) * k / K;
+    let d = 0; for (const x of s) d += Math.exp(-0.5 * ((y - x) / h) ** 2);
+    grid.push([y, d]); dmax = Math.max(dmax, d);
+  }
+  const at = y => { if (y <= lo || y >= hi) return 0; const t = (y - lo) / (hi - lo) * K, k = Math.floor(t);
+    const d0 = grid[k][1], d1 = grid[Math.min(k + 1, K)][1]; return (d0 + (d1 - d0) * (t - k)) / dmax; };
+  return { lo, hi, grid, dmax, at };
+}
+// the parts of a closed outline (X, Y) whose y lies in [a b]: the mean +/- SD stretch of a violin's outline
+function band(X, Y, a, b) {
+  const runs = []; let cur = null;
+  for (let i = 0; i < X.length - 1; i++) {
+    const y0 = Y[i], dy = Y[i + 1] - y0;
+    let t = null;
+    if (dy === 0) { if (y0 >= a && y0 <= b) t = [0, 1]; }
+    else { const ta = (a - y0) / dy, tb = (b - y0) / dy; t = [Math.max(0, Math.min(ta, tb)), Math.min(1, Math.max(ta, tb))]; if (t[0] > t[1]) t = null; }
+    if (!t) { if (cur) { runs.push(cur); cur = null; } continue; }
+    const pt = f => [X[i] + f * (X[i + 1] - X[i]), y0 + f * dy];
+    if (!cur || t[0] > 0) { if (cur) runs.push(cur); cur = [pt(t[0])]; }
+    cur.push(pt(t[1]));
+    if (t[1] < 1) { runs.push(cur); cur = null; }
+  }
+  if (cur) runs.push(cur);
+  return runs;
+}
+const meanSd = (m, sd, d) => [fx(m, d), isNum(sd) ? '(' + fx(sd, d) + ')' : ''];
+const sdv = v => { const n = v.length; if (n < 2) return NaN; const m = v.reduce((a, b) => a + b, 0) / n; return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / (n - 1)); };
+
+// the panels of a row's figure: the main effects, then the interaction read one factor at a time
+function panelsOf(R) {
+  const P = [];
+  const cellVals = lv => R.values[FIDS.map(f => lv[f]).join('|')];
+  const comps = (fid, at) => R.comps.filter(c => c.factor === fid && JSON.stringify(c.at) === JSON.stringify(at));
+  if (FIDS.length === 1) {
+    const f = FAC[FIDS[0]];
+    P.push({ row: 0, id: 'm:' + f.id, title: f.name, fid: f.id, term: f.id, within: f.within,
+             groups: f.levels.map(L => ({ fid: f.id, code: L.code, label: L.short, key: 'cell:' + L.code, name: L.name, vals: cellVals({ [f.id]: L.code }) })),
+             comps: comps(f.id, {}) });
+    return P;
+  }
+  FIDS.forEach(fid => {
+    const f = FAC[fid];
+    P.push({ row: 0, id: 'm:' + fid, title: f.name, fid, term: fid, within: f.within,
+             groups: f.levels.map(L => { const lv = R.levels.find(x => x.factor === fid && x.level === L.code);
+               return { fid, code: L.code, label: L.short, key: lv.key, name: L.name + ' (all ' + FAC[FIDS.find(x => x !== fid)].plural + ')', vals: lv.values }; }),
+             comps: comps(fid, {}) });
+  });
+  const inter = FIDS.join(':');
+  FIDS.forEach((fid, r) => {
+    const f = FAC[fid], g = FAC[FIDS.find(x => x !== fid)];
+    g.levels.forEach(M => {
+      P.push({ row: r + 1, id: 'x:' + fid + '@' + g.id + '=' + M.code, title: M.name, fid, term: inter, within: f.within, reading: [fid, g.id],
+               groups: f.levels.map(L => { const lv = { [fid]: L.code, [g.id]: M.code };
+                 return { fid, code: L.code, label: L.short, key: 'cell:' + FIDS.map(x => lv[x]).join('|'), name: cellName(lv), vals: cellVals(lv) }; }),
+               comps: comps(fid, { [g.id]: M.code }) });
+    });
+  });
+  return P;
+}
+
+// draw a row's figure at the width of its host (redrawn, not scaled, so its text stays ~12 px)
+function drawFigure(host, R, opts) {
+  host.replaceChildren();
+  const W = Math.max(300, Math.round(opts.width));
+  const P = panelsOf(R);
+  const aovOf = t => R.aov.find(a => a.term === t);
+  const inter = FIDS.length === 2 ? aovOf(FIDS.join(':')) : null;
+  const NR = Math.max(...P.map(p => p.row)) + 1;
+  P.forEach(pn => pn.groups.forEach(g => {
+    const v = g.vals.filter(isNum);
+    g.n = v.length; g.mean = v.length ? v.reduce((a, b) => a + b, 0) / v.length : NaN; g.sd = sdv(v); g.kde = kde(v);
+  }));
+  const ext = g => g.vals.filter(isNum).concat(isNum(g.mean) ? [g.mean] : [], g.kde ? [g.kde.lo, g.kde.hi] : []);
+  const all = P.flatMap(pn => pn.groups.flatMap(ext));
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (!(hi > lo)) hi = lo + 1;
+  const st = niceStep((hi - lo) / 6);                      // the axis follows the data (it does not start at 0)
+  const t0 = Math.floor(lo / st + 1e-9) * st, t1 = Math.ceil(hi / st - 1e-9) * st;
+  const ticks = []; for (let v = t0; v <= t1 + st * 1e-6; v += st) ticks.push(+v.toFixed(10));
+  const tickDec = (String(+st.toPrecision(6)).split('.')[1] || '').length;
+  // a caption line per row; two lines when the reading and the interaction's p would not fit side by side
+  const capLong = NR > 1 ? Math.max(...FIDS.map(fid => {
+    const g = FAC[FIDS.find(x => x !== fid)];
+    return (FAC[fid].plural + ' within each ' + g.noun).length + termName(FIDS.join(':')).length + 26; })) : 0;
+  const capH0 = NR > 1 ? (capLong * 6.4 > W - 24 ? 34 : 20) : 0, titleH = 20, labH = 22, gapR = 16, mL = 50, mR = 6;
+  const plotH = Math.round(Math.max(170, Math.min(260, W * 0.42)));
+  // the lines of panels: one row of the design each, or, in a narrow figure, one panel per line (the row's
+  // caption over its first panel), so that the levels' names never run into each other
+  const narrow = W < 460;
+  const lines = [];
+  for (let r = 0; r < NR; r++) {
+    const P0 = P.filter(p => p.row === r);
+    if (narrow) P0.forEach((pn, k) => lines.push({ r, cap: k === 0, panels: [pn] }));
+    else lines.push({ r, cap: true, panels: P0 });
+  }
+  const lineH = L => (L.cap ? capH0 : 0) + titleH + plotH + labH;
+  const H = lines.reduce((a, L) => a + lineH(L), 0) + (lines.length - 1) * gapR + 4;
+  const LAB = 31, BR = 26;                                   // the mean's two lines above it; a bracket and its p
+  // headroom so that a line's brackets fit under its titles: grown until they do (one value scale per line)
+  function padOf(P0) {
+    let pad = BR + 4;
+    for (let it = 0; it < 8; it++) {
+      const Yr = v => plotH - (v - t0) / (t1 - t0) * (plotH - pad);
+      let over = 0;
+      P0.forEach(pn => {
+        const nb = brackets(pn).length;
+        if (!nb) return;
+        const top = Math.min(...pn.groups.filter(g => isNum(g.mean)).map(g => Math.min(Yr(Math.max(...ext(g))), Yr(g.mean) - LAB)));
+        over = Math.max(over, nb * BR + 2 - top);
+      });
+      if (over <= 0.5) break;
+      pad += over;
+    }
+    return pad;
+  }
+  function brackets(pn) {
+    if (pn.groups.length === 2) return pn.comps.slice(0, 1);
+    return pn.comps.filter(c => c.sig);
+  }
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'Violins of ' + R.name + (R.splitName ? ', ' + R.splitName : '') });
+  const tt = $('div', 'tt');
+  const boxes = [], byP = {};
+  const dec = R.dec;
+  let y0 = 0;
+  for (const line of lines) {
+    const P0 = line.panels, r = line.r, capH = line.cap ? capH0 : 0, ly = y0;
+    const yTop = ly + capH + titleH, yBot = yTop + plotH, pad = padOf(P0);
+    y0 += lineH(line) + gapR;
+    const Y = v => yBot - (v - t0) / (t1 - t0) * (plotH - pad);
+    // the row's caption: what it reads, and its ANOVA term
+    if (capH) {
+      const c = S('text', { class: 'cap', x: 0, y: ly + 13, 'font-size': 12 }, svg);
+      if (r === 0) c.textContent = 'Main effects';
+      else {
+        // left: what the row reads; right: the interaction's p (on a second line when the figure is narrow)
+        const [fid, gid] = P0[0].reading;
+        c.textContent = FAC[fid].plural[0].toUpperCase() + FAC[fid].plural.slice(1) + ' within each ' + FAC[gid].noun;
+        const two = capH > 20;
+        const c2 = S('text', { class: 'cap', x: two ? 0 : W - mR, y: ly + (two ? 28 : 13), 'text-anchor': two ? 'start' : 'end', 'font-size': 12 }, svg);
+        S('tspan', {}, c2).textContent = termName(inter.term) + ': ';
+        S('tspan', { class: inter.sig ? 'b' : '' }, c2).textContent = inter.sig ? plab(inter.p) : plab(inter.p) + ', NS (pale: outside)';
+      }
+    }
+    const nb = P0.reduce((a, pn) => a + pn.groups.length + 0.5, 0);
+    const gap = 22, avail = W - mL - mR - gap * (P0.length - 1);
+    let x0 = mL;
+    P0.forEach(pn => {
+      const n = pn.groups.length, w = avail * (n + 0.5) / nb;
+      const cx = k => x0 + w * (k + 0.75) / (n + 0.5);
+      const hw = Math.min(0.40 * w / (n + 0.5), 62);
+      const outside = pn.term.includes(':') && !(inter && inter.sig);
+      const main = pn.comps.length === 1 ? pn.comps[0].key : 't:' + pn.term;
+      const pkey = pn.row === 0 ? 't:' + pn.term : main;
+      const pks = [pkey, 't:' + pn.term].concat(pn.comps.map(c => c.key)).filter((k, i, a) => a.indexOf(k) === i);
+      const bg = S('rect', { class: 'pbg', x: x0 - 8, y: yTop - titleH, width: w + 14, height: plotH + titleH + labH, rx: 6 }, svg);
+      bg.dataset.row = R.id; bg.dataset.ks = pks.join(' ');
+      boxes.push({ key: pkey, x: x0 - 8, y: yTop - titleH, w: w + 14, h: plotH + titleH + labH, v: false });
+      pn.groups.forEach((g, k) => {
+        const b = S('rect', { class: 'vbg', x: cx(k) - hw - 5, y: yTop, width: 2 * hw + 10, height: plotH + labH - 2, rx: 5 }, svg);
+        b.dataset.row = R.id; b.dataset.ks = g.key;
+        boxes.push({ key: g.key, x: cx(k) - hw - 5, y: yTop, w: 2 * hw + 10, h: plotH + labH - 2, v: true, g });
+      });
+      ticks.forEach(v => S('line', { class: 'grid', x1: x0, x2: x0 + w, y1: Y(v), y2: Y(v) }, svg));
+      if (t0 < 0 && t1 > 0) S('line', { class: 'zero', x1: x0, x2: x0 + w, y1: Y(0), y2: Y(0) }, svg);
+      S('line', { class: 'axis', x1: x0, x2: x0, y1: yTop, y2: yBot }, svg);
+      S('line', { class: 'axis', x1: x0, x2: x0 + w, y1: yBot, y2: yBot }, svg);
+      S('text', { class: 'ttl', x: x0 + w / 2, y: yTop - 6, 'text-anchor': 'middle', 'font-size': 12.5 }, svg).textContent = pn.title;
+      // the violins, in the level's colour
+      pn.groups.forEach((g, k) => {
+        const c = cx(k);
+        if (g.kde) {
+          const gr = g.kde.grid, dm = g.kde.dmax;
+          let d = `M${c},${Y(gr[0][0])}`;
+          gr.forEach(([y, v]) => { d += `L${c + hw * v / dm},${Y(y)}`; });
+          for (let i = gr.length - 1; i >= 0; i--) d += `L${c - hw * gr[i][1] / dm},${Y(gr[i][0])}`;
+          const pth = S('path', { d: d + 'Z', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }, svg);
+          pth.style.fill = col(g.fid, g.code); pth.style.fillOpacity = .3;
+          pth.style.stroke = `color-mix(in srgb, ${col(g.fid, g.code)} 75%, var(--ink))`;
+          if (isNum(g.sd) && g.sd > 0) {
+            const PX = [c], PY = [gr[0][0]];
+            gr.forEach(([y, v]) => { PX.push(c + hw * v / dm); PY.push(y); });
+            for (let i = gr.length - 1; i >= 0; i--) { PX.push(c - hw * gr[i][1] / dm); PY.push(gr[i][0]); }
+            PX.push(PX[0]); PY.push(PY[0]);
+            band(PX, PY, g.mean - g.sd, g.mean + g.sd).forEach(run => {
+              const sp = S('path', { class: 'sdc', d: run.map(([x, y], i) => (i ? 'L' : 'M') + x + ',' + Y(y)).join('') }, svg);
+              sp.style.stroke = `color-mix(in srgb, ${col(g.fid, g.code)} 55%, var(--ink))`;
+            });
+          }
+        }
+        S('text', { class: 'tick', x: c, y: yBot + 16, 'text-anchor': 'middle', 'font-size': 12 }, svg).textContent = g.label;
+      });
+      // every participant: a cross at their own value; a grey line joins their values (within factor)
+      const spread = i => { const u = (((i + 1) * 0.6180339887) % 1) * 2 - 1;
+        const s = Math.min(...pn.groups.map(g => g.kde && isNum(g.vals[i]) ? g.kde.at(g.vals[i]) : 1));
+        return u * hw * 0.8 * (isFinite(s) ? s : 0.5); };
+      const N = DATA.people.length, off = [];
+      for (let i = 0; i < N; i++) off.push(spread(i));
+      if (pn.within) for (let i = 0; i < N; i++) {
+        const pts = pn.groups.map((g, k) => isNum(g.vals[i]) ? [cx(k) + off[i], Y(g.vals[i])] : null).filter(Boolean);
+        if (pts.length < 2) continue;
+        const l = S('path', { class: 'pline', d: pts.map((p, j) => (j ? 'L' : 'M') + p[0] + ',' + p[1]).join('') }, svg);
+        (byP[i] = byP[i] || []).push(l);
+      }
+      pn.groups.forEach((g, k) => {
+        g.vals.forEach((v, i) => {
+          if (!isNum(v)) return;
+          const px = cx(k) + off[i], py = Y(v), s = 3.2;
+          const gg = S('g', {}, svg);
+          S('circle', { class: 'ring', cx: px, cy: py, r: 6 }, gg);
+          S('path', { class: 'ind', d: `M${px - s},${py - s}L${px + s},${py + s}M${px - s},${py + s}L${px + s},${py - s}` }, gg);
+          const hit = S('circle', { class: 'hit', cx: px, cy: py, r: 6.5 }, gg);
+          (byP[i] = byP[i] || []).push(gg);
+          hit.addEventListener('pointerenter', () => {
+            person(i, true);
+            tip([['b', DATA.people[i]], ['', ' · ' + g.name + ': ' + withUnit(fx(v, dec + 1), R.unit)]].concat(personLines(i)), px, py);
+          });
+          hit.addEventListener('pointerleave', () => { person(i, false); tt.style.display = 'none'; });
+        });
+      });
+      // the mean: a black line across the violin, its mean and (SD) written on it
+      pn.groups.forEach((g, k) => {
+        if (!isNum(g.mean)) return;
+        const c = cx(k), y = Y(g.mean);
+        S('line', { class: 'mean', x1: c - hw * 0.62, x2: c + hw * 0.62, y1: y, y2: y }, svg);
+        const lines = meanSd(g.mean, g.sd, dec).filter(Boolean);
+        const t = S('text', { class: 'mv', x: c, y: y - 5 - 14 * (lines.length - 1), 'text-anchor': 'middle', 'font-size': 11.5,
+                              'font-weight': 700, 'paint-order': 'stroke', 'stroke-width': 3, 'stroke-linejoin': 'round' }, svg);
+        lines.forEach((l, i) => { S('tspan', { x: c, dy: i ? 13 : 0 }, t).textContent = l; });
+      });
+      // the comparisons: a bracket over the two levels and its p, bold when significant; pale outside the interaction
+      const tops = pn.groups.filter(g => isNum(g.mean)).map(g => Math.min(Y(Math.max(...ext(g))), Y(g.mean) - LAB));
+      let yb = Math.min(...tops) - 4;
+      brackets(pn).forEach(c => {
+        const ia = pn.groups.findIndex(g => g.code === c.test), ib = pn.groups.findIndex(g => g.code === c.ref);
+        const xa = cx(Math.min(ia, ib)), xb = cx(Math.max(ia, ib));
+        const gb = S('g', { class: 'brk' + (outside ? ' out' : '') }, svg);
+        gb.dataset.row = R.id; gb.dataset.ks = c.key + ' t:' + c.term;
+        const bold = c.sig && !outside;
+        const lw = ((c.sig ? '' : 'NS: ') + plab(c.p)).length * 6.4 + 10, cw = Math.max(xb - xa + 12, lw);
+        S('rect', { class: 'sbg', x: (xa + xb) / 2 - cw / 2, y: yb - 19, width: cw, height: 26, rx: 4 }, gb);
+        S('path', { class: 'br', d: `M${xa},${yb + 5}V${yb}H${xb}V${yb + 5}` }, gb);
+        const lab = S('text', { class: 'pl' + (c.sig ? '' : ' ns'), x: (xa + xb) / 2, y: yb - 5, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': bold ? 700 : 400 }, gb);
+        lab.textContent = (c.sig ? '' : 'NS: ') + plab(c.p);
+        boxes.push({ key: c.key, x: xa, y: yb - 18, w: xb - xa, h: 24, v: true, c });
+        yb -= BR;
+      });
+      x0 += w + gap;
+    });
+    // the y axis's labels last, over the panels' highlight
+    ticks.forEach(v => S('text', { class: 'tick', x: mL - 7, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11.5 }, svg).textContent = fx(v, tickDec));
+    const yl = S('text', { class: 'tick', 'text-anchor': 'middle', 'font-size': 11.5, transform: `translate(11 ${(yTop + yBot) / 2}) rotate(-90)` }, svg);
+    yl.textContent = R.unit;
+  }
+  function tip(parts, px, py) {
+    tt.replaceChildren(...parts.map(tipPart));
+    tt.style.display = 'block';
+    const r2 = svg.getBoundingClientRect(), k = r2.width / W;
+    tt.style.left = Math.max(0, Math.min(px * k + 12, r2.width - tt.offsetWidth - 4)) + 'px';
+    tt.style.top = Math.max(0, py * k - tt.offsetHeight - 8) + 'px';
+  }
+  // the crosses of a marked participant are copied into a top layer (no pointer events), so that they come
+  // in front of the mean labels while marked
+  host._byP = byP; host._top = S('g', { 'pointer-events': 'none' }, svg);
+  // the panel, violin or bracket under the pointer: its statistic marked everywhere; a click keeps it
+  const under = ev => { const r = svg.getBoundingClientRect(), k = W / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k;
+    const inb = b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+    return boxes.find(o => o.c && inb(o)) || boxes.find(o => o.v && inb(o)) || boxes.find(o => !o.v && inb(o)) || null; };
+  let at = null;
+  svg.addEventListener('pointermove', ev => {
+    const b = under(ev), key = b ? b.key : null;
+    if (b && b.c && !ev.target.classList.contains('hit')) {
+      const c = b.c, bits = [['b', compName(c)], ['', ': ' + compStat(R, c)]];
+      if (c.term.includes(':')) bits.push(['', c.inside ? ' · inside the interaction' : ' · outside the interaction']);
+      tip(bits, b.x + b.w / 2, b.y);
+    } else if (b && b.g && !ev.target.classList.contains('hit')) {
+      const g = b.g; tip([['b', g.name], ['', ': mean ' + withUnit(fx(g.mean, dec), R.unit) + ' (SD ' + fx(g.sd, dec) + '), n = ' + g.n]], b.x + b.w / 2, b.y + 10);
+    } else if (!ev.target.classList.contains('hit')) tt.style.display = 'none';
+    if (key === at) return; at = key; setHover(R.id, key);
+  });
+  svg.addEventListener('pointerleave', () => { at = null; tt.style.display = 'none'; setHover(null); });
+  svg.addEventListener('click', ev => { const b = under(ev); if (b) toggle(R.id, b.key, null); });
+  host.append(svg, tt);
+}
+// a participant marked in every panel of every figure shown, and in the values table
+function person(i, on) {
+  document.querySelectorAll('.fig').forEach(f => {
+    if (!f._byP) return;
+    f._top.replaceChildren();
+    (f._byP[i] || []).forEach(e => {
+      if (e.classList.contains('pline')) { e.classList.toggle('hl', on); return; }
+      e.querySelectorAll('.ind,.ring').forEach(q => q.classList.toggle('hl', on));
+      if (on) { const c = e.cloneNode(true); c.querySelectorAll('.hit').forEach(h => h.remove()); f._top.append(c); }
+    });
+  });
+  document.querySelectorAll('table.pp tbody tr').forEach(tr => { if (+tr.dataset.p === i) tr.classList.toggle('hl', on); });
+}
+const compName = c => {
+  const f = FAC[c.factor];
+  let s = f.lv[c.test].name + ' − ' + f.lv[c.ref].name;
+  const at = Object.entries(c.at);
+  if (at.length) s += ' (' + at.map(([k, v]) => FAC[k].lv[v].name.toLowerCase()).join(', ') + ')';
+  return s;
+};
+const compStat = (R, c) => [withUnit(sgn(c.diff, R.dec), R.unit)].concat(isNum(c.rel) ? [sgn(c.rel, 1) + '%'] : [], [plab(c.p)],
+  isNum(c.g) ? ['g = ' + sgn(c.g, 2)] : []).join(', ') + (isNum(c.t) ? ` (t = ${fx(c.t, 2)} / ±${fx(c.thr, 2)})` : '');
+
+// ------------------------------------------------------------------ the statistics under the figure
+function statTable(head, rows, R) {
+  const t = $('table', 's'), th = $('thead'), hr = $('tr');
+  head.forEach(h => hr.append($('th', null, h))); th.append(hr); t.append(th);
+  const tb = $('tbody');
+  rows.forEach(r => {
+    const tr = $('tr', r.cls || null);
+    if (r.key) { linkAttrs(tr, R.id, r.key); }
+    if (r.title) tr.title = r.title;
+    if (r.sub) { const td = $('td', null, r.sub); td.colSpan = head.length; tr.append(td); }
+    else r.cells.forEach(c => { const td = $('td', c && c.b ? 'b' : null); td.textContent = c && c.t !== undefined ? c.t : c; tr.append(td); });
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function statsOf(R) {
+  const box = $('div', 'stats');
+  const nPerm = DATA.nPerm ? DATA.nPerm.toLocaleString('en') : null;
+  box.append($('h4', null, 'Analysis of variance'));
+  box.append(statTable(['Effect', 'F', 'df', 'p'], R.aov.map(a => ({ key: a.key,
+    title: isNum(a.thr) ? `F threshold (p = ${ALPHA}): ${fx(a.thr, 2)}` : '',
+    cells: [termName(a.term), fx(a.F, 2), isNum(a.df1) ? a.df1 + ', ' + a.df2 : '–', { t: pfmt(a.p), b: a.sig }] })), R));
+  box.append($('p', 'snote', (nPerm ? `Exact p-values from all ${nPerm} sign-flip permutations. ` : 'p-values from the statistics provided. ') + `Bold: p ≤ ${ALPHA}.`));
+  const rows = [];
+  R.levels.forEach(L => rows.push({ key: L.key, cells: [FAC[L.factor].lv[L.level].name + ' (all ' + FAC[FIDS.find(x => x !== L.factor)].plural + ')', String(L.n), fx(L.mean, R.dec), fx(L.sd, R.dec)] }));
+  R.cells.forEach(c => rows.push({ key: 'cell:' + c.code, cells: [cellName(c.lv), String(c.n), fx(c.mean, R.dec), fx(c.sd, R.dec)] }));
+  box.append($('h4', null, 'Conditions (' + (R.unit || 'values') + ')'));
+  box.append(statTable(['Condition', 'n', 'Mean', 'SD'], rows, R));
+  const head = ['Comparison', 'Difference' + (R.unit ? ' (' + R.unit + ')' : '')].concat(R.relative ? ['Relative'] : [], ['p', 'g']);
+  const crow = c => {
+    const out = c.term.includes(':') && !c.inside;
+    return { key: c.key, cls: out ? 'outr' : '', title: (isNum(c.t) ? `t = ${fx(c.t, 2)}, threshold ±${fx(c.thr, 2)}` : '') + (isNum(c.pOwn) ? `; p on its own = ${pfmt(c.pOwn)}` : '') + (out ? '; outside the interaction' : ''),
+             cells: [compName(c), sgn(c.diff, R.dec)].concat(R.relative ? [sgn(c.rel, 1) + '%'] : [], [{ t: pfmt(c.p), b: c.sig && !out }], [sgn(c.g, 2)]) };
+  };
+  const cr = [];
+  R.comps.filter(c => !c.term.includes(':')).forEach(c => cr.push(crow(c)));
+  if (FIDS.length === 2) {
+    const X = R.aov.find(a => a.term.includes(':'));
+    FIDS.forEach(fid => {
+      const g = FAC[FIDS.find(x => x !== fid)];
+      cr.push({ sub: FAC[fid].plural[0].toUpperCase() + FAC[fid].plural.slice(1) + ' within each ' + g.noun + ' — ' +
+        (X.sig ? 'inside the interaction (' + plab(X.p) + ')' : 'outside the interaction (' + plab(X.p) + '): pale, never bold') });
+      R.comps.filter(c => c.term.includes(':') && c.factor === fid).forEach(c => cr.push(crow(c)));
+    });
+  }
+  box.append($('h4', null, 'Comparisons'));
+  box.append(statTable(head, cr, R));
+  box.append($('p', 'snote', 'Differences from the group means' + (R.relative ? '; relative: over the second level’s mean' : '') +
+    '. p corrected within each family of comparisons (a main effect; the comparisons of the interaction). g: Hedges’ g. Hover a row for t and its threshold.'));
+  return box;
+}
+
+// ------------------------------------------------------------------ the panel beside (or under) the table
+const panelBox = document.getElementById('panel'), panelBody = document.getElementById('panelBody');
+let figHost = null, figW = 0;
+function showRow(rid) {
+  const R = ROWS[rid];
+  if (!R) return;
+  const same = curRow === rid;
+  curRow = rid;
+  if (same) return;
+  const h = panelBody.offsetHeight, sc = panelBox.scrollTop;
+  panelBody.style.minHeight = h + 'px';
+  panelBody.replaceChildren();
+  panelBody.append($('div', 'kicker', 'Figure and statistics'));
+  panelBody.append($('h3', null, rowTitle(R)));
+  panelBody.append($('p', 'hint', R.kind === 'corr' ? 'Hover a panel or a participant; click a panel to keep it.' :
+    'Hover a panel, a violin or a p-value to mark its statistics everywhere; click to keep it.'));
+  const wrap = $('div', 'figwrap');
+  figHost = $('div', 'fig');
+  const grow = $('button', 'grow', '⤢'); grow.type = 'button'; grow.title = 'Enlarge the figure'; grow.setAttribute('aria-label', 'Enlarge the figure');
+  grow.addEventListener('click', () => openBig(R));
+  wrap.append(figHost, grow);
+  panelBody.append(wrap);
+  panelBody.append($('p', 'figkey', R.kind === 'corr' ? corrKey(R) : figKey(R)));
+  panelBody.append(R.kind === 'corr' ? corrStats(R) : statsOf(R));
+  document.getElementById('ptitle').textContent = R.name + (R.splitName ? ' — ' + R.splitName : '');
+  figW = figHost.clientWidth;
+  drawerOf(R)(figHost, R, { width: figW });
+  panelBody.style.minHeight = '';
+  panelBox.scrollTop = sc;
+}
+function figKey(R) {
+  return 'Violins: each group’s distribution, the outline bold over the mean ± SD; black line: the mean, with the mean and (SD) on it. ' +
+    '×: one participant each' + (DATA.factors.some(f => f.within) ? ', joined across the levels of a within-participant factor' : '') +
+    '. Brackets: the comparison and its p (bold when significant' + (DATA.factors.length === 2 ? '; pale outside the interaction' : '') + ').';
+}
+const later = f => requestAnimationFrame(() => requestAnimationFrame(f));
+if (window.ResizeObserver) new ResizeObserver(() => later(() => {
+  if (!figHost || !curRow || !figHost.isConnected) return;
+  const w = figHost.clientWidth;
+  if (w && Math.abs(w - figW) >= 1) { figW = w; drawerOf(ROWS[curRow])(figHost, ROWS[curRow], { width: w }); paint(); }
+})).observe(panelBox);
+const big = document.getElementById('big'), bigBody = document.getElementById('bigBody');
+function openBig(R) {
+  document.getElementById('bigTitle').textContent = rowTitle(R);
+  bigBody.replaceChildren();
+  const f = $('div', 'fig figwrap'); bigBody.append(f);
+  big.showModal();
+  drawerOf(R)(f, R, { width: Math.min(bigBody.clientWidth, 1160) });
+  paint();
+}
+document.getElementById('bigClose').addEventListener('click', () => big.close());
+big.addEventListener('click', e => { if (e.target === big) big.close(); });
+big.addEventListener('close', () => { bigBody.replaceChildren(); paint(); });
+wire(bigBody); wire(panelBody);
+
+// docked under the table (narrow screens): the panel can be hidden; pinning shows it again. Remembered.
+const pToggle = document.getElementById('pToggle');
+function setCollapsed(h) {
+  if (panelBox.classList.contains('collapsed') === h) return;
+  panelBox.classList.toggle('collapsed', h);
+  pToggle.textContent = h ? 'Show figure' : 'Hide figure';
+  pToggle.setAttribute('aria-expanded', String(!h));
+  try { localStorage.setItem('srd-panel-hidden', h ? '1' : '0'); } catch (e) {}
+}
+pToggle.addEventListener('click', () => setCollapsed(!panelBox.classList.contains('collapsed')));
+try { if (localStorage.getItem('srd-panel-hidden') === '1') setCollapsed(true); } catch (e) {}
+
+// ------------------------------------------------------------------ the tables
+function hscroll(sc) {
+  const wrap = $('div', 'hscroll'); wrap.append(sc);
+  const arrow = (side, dir, label) => {
+    const b = $('button', 'harrow ' + side); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label);
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="' + (dir < 0 ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7') +
+      '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    b.addEventListener('click', () => sc.scrollBy({ left: dir * Math.max(160, 0.6 * sc.clientWidth), behavior: 'smooth' }));
+    wrap.append(b);
+  };
+  arrow('l', -1, 'Scroll the table left'); arrow('r', 1, 'Scroll the table right');
+  const update = () => { const room = sc.scrollWidth - sc.clientWidth;
+    wrap.classList.toggle('canl', sc.scrollLeft > 1); wrap.classList.toggle('canr', sc.scrollLeft < room - 1); };
+  sc.addEventListener('scroll', update, { passive: true });
+  wrap.addEventListener('pointerenter', update);
+  if (window.ResizeObserver) new ResizeObserver(update).observe(sc);
+  return wrap;
+}
+function colKey(fid, code) { const k = $('span', 'key'); k.style.background = col(fid, code); return k; }
+function mainTable(tab) {
+  const t = $('table', 't'), th = $('thead');
+  const two = FIDS.length === 2, A = FAC[FIDS[0]], B = two ? FAC[FIDS[1]] : null;
+  const first = !tab.multi && ROWS[tab.rows[0]].splitName ? DATA.split : 'Variable';
+  const cells = ROWS[tab.rows[0]].cells;
+  if (two) {
+    const h1 = $('tr');
+    h1.append($('th'), $('th'));
+    B.levels.forEach(L => { const c = $('th'); c.append(colKey(B.id, L.code), document.createTextNode(L.name)); c.colSpan = A.levels.length; h1.append(c); });
+    const pc = $('th', null, 'p'); pc.colSpan = DATA.terms.length; h1.append(pc);
+    th.append(h1);
+  }
+  const h2 = $('tr');
+  h2.append($('th', null, first), $('th', null, 'Unit'));
+  cells.forEach(c => { const x = $('th'); x.append(colKey(A.id, c.lv[A.id]), document.createTextNode(A.lv[c.lv[A.id]].short)); h2.append(x); });
+  DATA.terms.forEach(tm => h2.append($('th', null, two ? termName(tm) : 'p ' + termName(tm))));
+  th.append(h2); t.append(th);
+  const tb = $('tbody');
+  tab.rows.forEach(rid => {
+    const R = ROWS[rid], tr = $('tr', 'data'); tr.dataset.row = rid;
+    tr.append($('td', null, rowLabel(R, tab.multi)), $('td', 'u', R.unit));
+    R.cells.forEach(c => tr.append(linkAttrs($('td', 'k', fx(c.mean, R.dec) + ' (' + fx(c.sd, R.dec) + ')'), rid, 'cell:' + c.code)));
+    R.aov.forEach(a => tr.append(linkAttrs($('td', 'k' + (a.sig ? ' b' : ''), pfmt(a.p)), rid, a.key)));
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function peopleTable(tab) {
+  const t = $('table', 't pp'), th = $('thead'), h1 = $('tr'), h2 = $('tr');
+  h1.append($('th')); h2.append($('th', null, 'Participant'));
+  tab.rows.forEach((rid, gi) => {
+    const R = ROWS[rid], c = $('th', 'g0' + (gi % 2 ? ' sh' : ''), rowLabel(R, tab.multi) + (R.unit ? ' (' + R.unit + ')' : ''));
+    c.colSpan = R.cells.length; h1.append(c);
+    R.cells.forEach((cl, k) => h2.append($('th', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), cellShort(cl.lv))));
+  });
+  th.append(h1, h2); t.append(th);
+  const tb = $('tbody');
+  DATA.people.forEach((p, i) => {
+    const tr = $('tr'); tr.dataset.p = i; tr.append($('td', null, p));
+    tab.rows.forEach((rid, gi) => { const R = ROWS[rid];
+      R.cells.forEach((cl, k) => tr.append($('td', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), fx(R.values[cl.code][i], R.dec + 1)))); });
+    tr.addEventListener('pointerenter', () => person(i, true));
+    tr.addEventListener('pointerleave', () => person(i, false));
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function csvOf(tab) {
+  const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  const head = ['participant'];
+  tab.rows.forEach(rid => { const R = ROWS[rid]; R.cells.forEach(c => head.push(q(rowLabel(R, tab.multi) + ' ' + cellName(c.lv, ' ') + (R.unit ? ' (' + R.unit + ')' : '')))); });
+  const lines = [head.join(',')];
+  DATA.people.forEach((p, i) => { const r = [p];
+    tab.rows.forEach(rid => { const R = ROWS[rid]; R.cells.forEach(c => { const v = R.values[c.code][i]; r.push(isNum(v) ? String(v) : ''); }); });
+    lines.push(r.join(',')); });
+  return lines.join('\r\n') + '\r\n';
+}
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' }));
+  a.download = name; document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+// ------------------------------------------------------------------ participants: characteristics, cards, figure
+const PI = DATA.people_info;
+const PV = {}; if (PI) PI.vars.forEach(v => { PV[v.id] = v; });
+const tipPart = ([t, s]) => t === 'br' ? $('br') : t === 'm' ? $('span', 'm', s) : t ? $(t, null, s) : document.createTextNode(s);
+// a participant's characteristics, for the tooltips of their crosses everywhere
+function personLines(i) {
+  if (!PI) return [];
+  const bits = PI.cats.map(c => { const L = c.levels.find(l => l.code === c.values[i]); return L ? L.name : ''; })
+    .concat(PI.vars.map(v => isNum(v.values[i]) ? v.name.toLowerCase() + ' ' + withUnit(fx(v.values[i], v.vdec), v.unit) : ''))
+    .filter(Boolean);
+  return bits.length ? [['br'], ['m', bits.join(' · ')]] : [];
+}
+const rowTitle = R => R.kind === 'corr'
+  ? R.name + (R.splitName ? ' — ' + R.splitName : '') + ': ' + (PV[R.x] ? PV[R.x].name.toLowerCase() : 'correlation')
+  : R.name + (R.splitName ? ' — ' + R.splitName : '') + (R.unit ? ' (' + R.unit + ')' : '');
+const drawerOf = R => R.kind === 'corr' ? drawScatter : drawFigure;
+// the tooltip of a figure, at (px, py) in its own coordinates
+function figTip(tt, svg, W, parts, px, py) {
+  tt.replaceChildren(...parts.map(tipPart));
+  tt.style.display = 'block';
+  const r2 = svg.getBoundingClientRect(), k = r2.width / W;
+  tt.style.left = Math.max(0, Math.min(px * k + 12, r2.width - tt.offsetWidth - 4)) + 'px';
+  tt.style.top = Math.max(0, py * k - tt.offsetHeight - 8) + 'px';
+}
+const cross = (g, px, py, s) => S('path', { class: 'ind', d: `M${px - s},${py - s}L${px + s},${py + s}M${px - s},${py + s}L${px + s},${py - s}` }, g);
+// a figure's pointer: the box under it marks its statistic everywhere; a click keeps it
+function wireBoxes(svg, W, rowId, boxes, tt) {
+  const under = ev => { const r = svg.getBoundingClientRect(), k = W / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k;
+    return boxes.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) || null; };
+  let at = null;
+  svg.addEventListener('pointermove', ev => { const b = under(ev), key = b ? b.key : null; if (key === at) return; at = key; setHover(rowId, key); });
+  svg.addEventListener('pointerleave', () => { at = null; tt.style.display = 'none'; setHover(null); });
+  svg.addEventListener('click', ev => { const b = under(ev); if (b) toggle(rowId, b.key, null); });
+}
+function axisTicks(lo, hi, n) {
+  if (!(hi > lo)) { hi = lo + 1; }
+  const st = niceStep((hi - lo) / n), t0 = Math.floor(lo / st + 1e-9) * st, t1 = Math.ceil(hi / st - 1e-9) * st;
+  const ticks = []; for (let v = t0; v <= t1 + st * 1e-6; v += st) ticks.push(+v.toFixed(10));
+  return { t0, t1, ticks, dec: (String(+st.toPrecision(6)).split('.')[1] || '').length };
+}
+
+// the participants' figure: one violin per characteristic, every participant as a cross
+function drawTraits(host, opts) {
+  host.replaceChildren();
+  const W = Math.max(300, Math.round(opts.width)), V = PI.vars;
+  const nCol = Math.max(1, Math.min(V.length, Math.floor(W / 165)));
+  const nRow = Math.ceil(V.length / nCol), gap = 18, pw = (W - gap * (nCol - 1)) / nCol;
+  const titleH = 22, plotH = 170, labH = 8, mL = 40;
+  const H = nRow * (titleH + plotH + labH) + (nRow - 1) * 14 + 4;
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'The participants’ characteristics' });
+  const tt = $('div', 'tt'), byP = {}, boxes = [];
+  V.forEach((v, j) => {
+    const c0 = j % nCol, r0 = Math.floor(j / nCol);
+    const x0 = c0 * (pw + gap), y0 = r0 * (titleH + plotH + labH + 14);
+    const vals = v.values.map(x => isNum(x) ? x : null), k = kde(vals.filter(isNum));
+    const ext = vals.filter(isNum).concat(k ? [k.lo, k.hi] : []);
+    const A = axisTicks(Math.min(...ext), Math.max(...ext), 4);
+    const yTop = y0 + titleH + 26, yBot = y0 + titleH + plotH;
+    const Y = x => yBot - (x - A.t0) / (A.t1 - A.t0) * (yBot - yTop);
+    const bg = S('rect', { class: 'pbg', x: x0, y: y0, width: pw, height: titleH + plotH + labH, rx: 6 }, svg);
+    bg.dataset.row = 'participants'; bg.dataset.ks = v.key;
+    boxes.push({ key: v.key, x: x0, y: y0, w: pw, h: titleH + plotH + labH });
+    S('text', { class: 'ttl', x: x0 + pw / 2, y: y0 + 15, 'text-anchor': 'middle', 'font-size': 12.5 }, svg).textContent = v.name + (v.unit ? ' (' + v.unit + ')' : '');
+    A.ticks.forEach(t => {
+      S('line', { class: 'grid', x1: x0 + mL, x2: x0 + pw - 6, y1: Y(t), y2: Y(t) }, svg);
+      S('text', { class: 'tick', x: x0 + mL - 6, y: Y(t) + 4, 'text-anchor': 'end', 'font-size': 11 }, svg).textContent = fx(t, A.dec);
+    });
+    S('line', { class: 'axis', x1: x0 + mL, x2: x0 + mL, y1: yTop, y2: yBot }, svg);
+    const cx = x0 + mL + (pw - mL - 6) / 2, hw = Math.min((pw - mL - 6) * 0.38, 46);
+    if (k) {
+      const gr = k.grid, dm = k.dmax;
+      let d = `M${cx},${Y(gr[0][0])}`;
+      gr.forEach(([y, q]) => { d += `L${cx + hw * q / dm},${Y(y)}`; });
+      for (let i = gr.length - 1; i >= 0; i--) d += `L${cx - hw * gr[i][1] / dm},${Y(gr[i][0])}`;
+      const pth = S('path', { d: d + 'Z', 'stroke-width': 1.2 }, svg);
+      pth.style.fill = 'var(--muted)'; pth.style.fillOpacity = .22; pth.style.stroke = 'var(--ink-2)';
+      if (isNum(v.sd) && v.sd > 0) {
+        const PX = [cx], PY = [gr[0][0]];
+        gr.forEach(([y, q]) => { PX.push(cx + hw * q / dm); PY.push(y); });
+        for (let i = gr.length - 1; i >= 0; i--) { PX.push(cx - hw * gr[i][1] / dm); PY.push(gr[i][0]); }
+        PX.push(PX[0]); PY.push(PY[0]);
+        band(PX, PY, v.mean - v.sd, v.mean + v.sd).forEach(run => {
+          const sp = S('path', { class: 'sdc', d: run.map(([x, y], i) => (i ? 'L' : 'M') + x + ',' + Y(y)).join('') }, svg);
+          sp.style.stroke = 'var(--ink-2)';
+        });
+      }
+    }
+    vals.forEach((x, i) => {
+      if (!isNum(x)) return;
+      const u = (((i + 1) * 0.6180339887) % 1) * 2 - 1, px = cx + u * hw * 0.8 * (k ? k.at(x) : 0.5), py = Y(x);
+      const g = S('g', { class: 'pt' }, svg);
+      g.dataset.row = 'participants'; g.dataset.ks = PI.cats.map(c => c.key + '=' + c.values[i]).join(' ');
+      cross(g, px, py, 3.2);
+      const hit = S('circle', { class: 'hit', cx: px, cy: py, r: 6.5 }, g);
+      (byP[i] = byP[i] || []).push(g);
+      hit.addEventListener('pointerenter', () => { person(i, true);
+        figTip(tt, svg, W, [['b', DATA.people[i]], ['', ' · ' + v.name.toLowerCase() + ': ' + withUnit(fx(x, v.vdec), v.unit)]].concat(personLines(i)), px, py); });
+      hit.addEventListener('pointerleave', () => { person(i, false); tt.style.display = 'none'; });
+    });
+    if (isNum(v.mean)) {
+      const y = Y(v.mean);
+      S('line', { class: 'mean', x1: cx - hw * 0.62, x2: cx + hw * 0.62, y1: y, y2: y }, svg);
+      const t = S('text', { class: 'mv', x: cx, y: y - 19, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': 700,
+                            'paint-order': 'stroke', 'stroke-width': 3, 'stroke-linejoin': 'round' }, svg);
+      meanSd(v.mean, v.sd, v.dec).forEach((l, i) => { S('tspan', { x: cx, dy: i ? 13 : 0 }, t).textContent = l; });
+    }
+  });
+  host._byP = byP; host._top = S('g', { 'pointer-events': 'none' }, svg);
+  wireBoxes(svg, W, 'participants', boxes, tt);
+  host.append(svg, tt);
+}
+let traitsHost = null, traitsW = 0;
+function drawTraitsNow() {
+  if (!traitsHost || !traitsHost.isConnected) return;
+  traitsW = traitsHost.clientWidth;
+  drawTraits(traitsHost, { width: traitsW });
+}
+if (window.ResizeObserver) new ResizeObserver(() => later(() => {
+  if (!traitsHost || !traitsHost.isConnected) return;
+  const w = traitsHost.clientWidth;
+  if (w && Math.abs(w - traitsW) >= 1) { drawTraitsNow(); paint(); }
+})).observe(document.getElementById('content'));
+// the participants' table, figure and values, after the methods' participants section
+function participantsBlock() {
+  const box = $('div', 'pblock');
+  box.append($('h3', null, 'The participants (n = ' + DATA.people.length + ')'));
+  const t = $('table', 't'), th = $('thead'), hr = $('tr');
+  ['Characteristic', 'Unit', 'Mean (SD)', 'Range'].forEach(h => hr.append($('th', null, h)));
+  th.append(hr); t.append(th);
+  // numeric characteristics only: the counts of a categorical one (sex) are cited in the methods' text,
+  // and each participant's level is in their card and in the values per participant
+  const tb = $('tbody');
+  PI.vars.forEach(v => {
+    const tr = linkAttrs($('tr'), 'participants', v.key);
+    tr.append($('td', null, v.name), $('td', 'u', v.unit), $('td', null, fx(v.mean, v.dec) + ' (' + fx(v.sd, v.dec) + ')'),
+              $('td', null, fx(v.min, v.vdec) + '–' + fx(v.max, v.vdec)));
+    tb.append(tr);
+  });
+  t.append(tb);
+  const sc = $('div', 'tablebox'); sc.append(t); box.append(sc);
+  traitsHost = $('div', 'fig figwrap'); box.append(traitsHost);
+  box.append($('p', 'figkey', 'Each characteristic’s distribution (the outline bold over the mean ± SD; black line: the mean, with the mean and (SD) on it); ×: one participant each. Hover a participant to see all their characteristics.'));
+  const det = $('details');
+  det.append($('summary', null, 'Values per participant'));
+  const pt = $('table', 't pp'), ph = $('thead'), phr = $('tr');
+  ['Participant'].concat(PI.cats.map(c => c.name), PI.vars.map(v => v.name + (v.unit ? ' (' + v.unit + ')' : ''))).forEach(h => phr.append($('th', null, h)));
+  ph.append(phr); pt.append(ph);
+  const pb = $('tbody');
+  DATA.people.forEach((p, i) => {
+    const tr = $('tr'); tr.dataset.p = i; tr.append($('td', null, p));
+    PI.cats.forEach(c => { const L = c.levels.find(l => l.code === c.values[i]); tr.append($('td', null, L ? L.name : '–')); });
+    PI.vars.forEach(v => tr.append($('td', null, fx(v.values[i], v.vdec))));
+    tr.addEventListener('pointerenter', () => person(i, true));
+    tr.addEventListener('pointerleave', () => person(i, false));
+    pb.append(tr);
+  });
+  pt.append(pb);
+  const ps = $('div', 'tablebox'); ps.append(pt); det.append(hscroll(ps));
+  const dl = $('button', 'btn', 'Download these values (CSV)'); dl.type = 'button';
+  dl.addEventListener('click', () => {
+    const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    const lines = [['participant'].concat(PI.cats.map(c => c.id), PI.vars.map(v => q(v.name + (v.unit ? ' (' + v.unit + ')' : '')))).join(',')];
+    DATA.people.forEach((p, i) => lines.push([p].concat(PI.cats.map(c => c.values[i]), PI.vars.map(v => isNum(v.values[i]) ? String(v.values[i]) : '')).join(',')));
+    download('participants.csv', lines.join('\r\n') + '\r\n');
+  });
+  det.append(dl);
+  box.append(det);
+  return box;
+}
+
+// ------------------------------------------------------------------ correlations
+const levelOf = (fid, code) => FAC[fid].lv[code];
+function corrCell(e) { return fx(e.r, 2) + ' (' + pfmt(e.p) + ')'; }
+function corrTable(tab) {
+  const rows = tab.rows.map(r => ROWS[r]);
+  const splits = [...new Set(rows.map(R => R.split))], outs = [...new Set(rows.map(R => R.outcome))];
+  const by = FAC[rows[0].by];
+  const t = $('table', 't'), th = $('thead'), h1 = $('tr'), h2 = $('tr');
+  h1.append($('th')); h2.append($('th', null, 'Variable'));
+  splits.forEach(sp => { const R = rows.find(x => x.split === sp); const c = $('th', null, R.splitName || ''); c.colSpan = by.levels.length; h1.append(c);
+    by.levels.forEach(L => { const x = $('th'); x.append(colKey(by.id, L.code), document.createTextNode(L.name)); h2.append(x); }); });
+  th.append(h1, h2); t.append(th);
+  const tb = $('tbody');
+  outs.forEach(o => {
+    const first = rows.find(R => R.outcome === o);
+    const tr = $('tr', 'data'); tr.dataset.row = first.id; tr.append($('td', null, first.name));
+    splits.forEach(sp => { const R = rows.find(x => x.outcome === o && x.split === sp);
+      by.levels.forEach(L => { const e = R && R.entries.find(x => x.level === L.code);
+        tr.append(e ? linkAttrs($('td', 'k' + (e.sig ? ' b' : ''), corrCell(e)), R.id, e.key) : $('td', null, '–')); }); });
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function corrNote(R) {
+  const C = DATA.corr || {}, X = PV[R.x];
+  return `r (p): Pearson’s r between ${X ? X.noun : 'x'} and ${R.yNoun}, and its p` +
+    (C.family ? ` (${(C.correction || []).join(', ').replace('holm', 'Holm–Bonferroni')} over the ${C.family} tests${C.within ? ' of each ' + C.within : ''})` : '') +
+    `; bold: p ≤ ${ALPHA}. ${R.yFormula ? R.yLabel + ': ' + R.yFormula + '; ' + R.yNeg + '. ' : ''}` +
+    'Hover a value to see its scatter plot; click to keep it.';
+}
+function corrKey(R) {
+  const X = PV[R.x];
+  return '×: one participant each, at their ' + (X ? X.name.toLowerCase() : 'x') + ' and ' + R.yNoun +
+    '. Line: least-squares fit, solid when the correlation is significant, dashed otherwise. Dashed grey: zero.';
+}
+function drawScatter(host, R, opts) {
+  host.replaceChildren();
+  const W = Math.max(300, Math.round(opts.width)), X = PV[R.x], E = R.entries;
+  const nCol = W < 460 ? 1 : E.length, nRow = Math.ceil(E.length / nCol);
+  const mL = 52, mR = 8, gap = 24, titleH = 38, labH = 38;
+  const pw = (W - mL - mR - gap * (nCol - 1)) / nCol;
+  const plotH = Math.round(Math.max(170, Math.min(250, pw * 0.8)));
+  const H = nRow * (titleH + plotH + labH) + (nRow - 1) * 14 + 4;
+  const xs = X.values.filter(isNum);
+  const AX = axisTicks(Math.min(...xs), Math.max(...xs), 4);
+  const ys = E.flatMap(e => e.y.filter(isNum)).concat([0]);
+  const AY = axisTicks(Math.min(...ys), Math.max(...ys), 4);
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'Scatter plots of ' + rowTitle(R) });
+  const tt = $('div', 'tt'), byP = {}, boxes = [];
+  E.forEach((e, j) => {
+    const c0 = j % nCol, r0 = Math.floor(j / nCol);
+    const x0 = mL + c0 * (pw + gap), y0 = r0 * (titleH + plotH + labH + 14);
+    const yTop = y0 + titleH, yBot = yTop + plotH;
+    const Xp = x => x0 + (x - AX.t0) / (AX.t1 - AX.t0) * pw, Yp = y => yBot - (y - AY.t0) / (AY.t1 - AY.t0) * plotH;
+    const bg = S('rect', { class: 'pbg', x: x0 - (c0 ? 8 : mL - 4), y: y0, width: pw + (c0 ? 14 : mL + 2), height: titleH + plotH + labH, rx: 6 }, svg);
+    bg.dataset.row = R.id; bg.dataset.ks = e.key;
+    boxes.push({ key: e.key, x: x0 - 8, y: y0, w: pw + 14, h: titleH + plotH + labH });
+    const L = levelOf(R.by, e.level);
+    S('text', { class: 'ttl', x: x0 + pw / 2, y: y0 + 14, 'text-anchor': 'middle', 'font-size': 12.5 }, svg).textContent = L.name;
+    const st = S('text', { class: 'stl' + (e.sig ? ' b' : ''), x: x0 + pw / 2, y: y0 + 30, 'text-anchor': 'middle', 'font-size': 11.5 }, svg);
+    st.textContent = 'r = ' + fx(e.r, 2) + ', ' + plab(e.p) + (e.sig && e.strength ? ' (' + e.strength + ')' : e.sig ? '' : ', NS');
+    AY.ticks.forEach(v => S('line', { class: 'grid', x1: x0, x2: x0 + pw, y1: Yp(v), y2: Yp(v) }, svg));
+    if (AY.t0 < 0 && AY.t1 > 0) S('line', { class: 'zero', x1: x0, x2: x0 + pw, y1: Yp(0), y2: Yp(0) }, svg);
+    S('line', { class: 'axis', x1: x0, x2: x0, y1: yTop, y2: yBot }, svg);
+    S('line', { class: 'axis', x1: x0, x2: x0 + pw, y1: yBot, y2: yBot }, svg);
+    AX.ticks.forEach(v => S('text', { class: 'tick', x: Xp(v), y: yBot + 15, 'text-anchor': 'middle', 'font-size': 11 }, svg).textContent = fx(v, AX.dec));
+    S('text', { class: 'tick', x: x0 + pw / 2, y: yBot + 31, 'text-anchor': 'middle', 'font-size': 11.5 }, svg).textContent = X.name + (X.unit ? ' (' + X.unit + ')' : '');
+    if (c0 === 0) {
+      AY.ticks.forEach(v => S('text', { class: 'tick', x: x0 - 6, y: Yp(v) + 4, 'text-anchor': 'end', 'font-size': 11 }, svg).textContent = fx(v, AY.dec));
+      S('text', { class: 'tick', 'text-anchor': 'middle', 'font-size': 11.5, transform: `translate(${x0 - mL + 11} ${(yTop + yBot) / 2}) rotate(-90)` }, svg)
+        .textContent = (R.yUnit === '%' ? 'Relative difference (%)' : 'Difference (' + R.yUnit + ')');
+    }
+    // the least-squares line over the participants' range
+    const xa = Math.min(...xs), xb = Math.max(...xs);
+    S('path', { class: 'fit' + (e.sig ? '' : ' ns'), d: `M${Xp(xa)},${Yp(e.intercept + e.slope * xa)}L${Xp(xb)},${Yp(e.intercept + e.slope * xb)}` }, svg);
+    e.y.forEach((y, i) => {
+      const x = X.values[i];
+      if (!isNum(x) || !isNum(y)) return;
+      const px = Xp(x), py = Yp(y), g = S('g', {}, svg);
+      cross(g, px, py, 3.4);
+      const hit = S('circle', { class: 'hit', cx: px, cy: py, r: 7 }, g);
+      (byP[i] = byP[i] || []).push(g);
+      hit.addEventListener('pointerenter', () => { person(i, true);
+        figTip(tt, svg, W, [['b', DATA.people[i]], ['', ' · ' + L.name.toLowerCase() + ': ' + withUnit(sgn(y, R.yDec), R.yUnit) +
+          ' at ' + withUnit(fx(x, X.dec), X.unit)]].concat(personLines(i)), px, py); });
+      hit.addEventListener('pointerleave', () => { person(i, false); tt.style.display = 'none'; });
+    });
+  });
+  host._byP = byP; host._top = S('g', { 'pointer-events': 'none' }, svg);
+  wireBoxes(svg, W, R.id, boxes, tt);
+  host.append(svg, tt);
+}
+function corrStats(R) {
+  const box = $('div', 'stats'), C = DATA.corr || {}, X = PV[R.x];
+  box.append($('h4', null, 'Correlations'));
+  const unit = R.yUnit + ' per ' + (X && X.unit ? X.unit : 'unit');
+  box.append(statTable(['Correlation', 'n', 'r', 'Slope (' + unit + ')', 'p', 'p uncorrected', 'Strength'], R.entries.map(e => ({
+    key: e.key, cells: [levelOf(R.by, e.level).name, String(e.n), { t: fx(e.r, 2), b: e.sig }, sgn(e.slope, 2), { t: pfmt(e.p), b: e.sig },
+                        pfmt(e.pRaw), e.sig ? (e.strength || '–') : '–'] })), R));
+  const words = (C.strength || []).map(([th, w]) => w + ': |r| ≥ ' + th).join('; ');
+  box.append($('p', 'snote', 'Pearson’s r; slope: least squares' + (C.family ? '; p corrected (' + (C.correction || []).join(', ').replace('holm', 'Holm–Bonferroni') +
+    ') over the ' + C.family + ' tests' + (C.within ? ' of each ' + C.within : '') + ', p uncorrected before it' : '') + '. Bold: p ≤ ' + ALPHA + '.' + (words ? ' Strength (significant only): ' + words + '.' : '')));
+  return box;
+}
+function corrPeopleTable(tab) {
+  const rows = tab.rows.map(r => ROWS[r]), X = PV[rows[0].x];
+  const t = $('table', 't pp'), th = $('thead'), h1 = $('tr'), h2 = $('tr');
+  h1.append($('th'), $('th')); h2.append($('th', null, 'Participant'), $('th', null, X.name + (X.unit ? ' (' + X.unit + ')' : '')));
+  rows.forEach((R, gi) => { const c = $('th', 'g0' + (gi % 2 ? ' sh' : ''), R.name + (R.splitName ? ' · ' + R.splitName : '') + ' (' + R.yUnit + ')');
+    c.colSpan = R.entries.length; h1.append(c);
+    R.entries.forEach((e, k) => h2.append($('th', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), levelOf(R.by, e.level).name))); });
+  th.append(h1, h2); t.append(th);
+  const tb = $('tbody');
+  DATA.people.forEach((p, i) => {
+    const tr = $('tr'); tr.dataset.p = i; tr.append($('td', null, p), $('td', null, fx(X.values[i], X.dec)));
+    rows.forEach((R, gi) => R.entries.forEach((e, k) => tr.append($('td', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), sgn(e.y[i], R.yDec + 1)))));
+    tr.addEventListener('pointerenter', () => person(i, true));
+    tr.addEventListener('pointerleave', () => person(i, false));
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function corrCsv(tab) {
+  const rows = tab.rows.map(r => ROWS[r]), X = PV[rows[0].x];
+  const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  const head = ['participant', q(X.name + (X.unit ? ' (' + X.unit + ')' : ''))];
+  rows.forEach(R => R.entries.forEach(e => head.push(q(R.name + (R.splitName ? ' ' + R.splitName : '') + ' ' + levelOf(R.by, e.level).name + ' (' + R.yUnit + ')'))));
+  const lines = [head.join(',')];
+  DATA.people.forEach((p, i) => { const r = [p, isNum(X.values[i]) ? String(X.values[i]) : ''];
+    rows.forEach(R => R.entries.forEach(e => r.push(isNum(e.y[i]) ? String(e.y[i]) : ''))); lines.push(r.join(',')); });
+  return lines.join('\r\n') + '\r\n';
+}
+
+// ------------------------------------------------------------------ citations: the reference in a popover
+// Hover a citation: after 150 ms its reference opens under it (over it when there is no room), with its link;
+// leaving closes it after 250 ms, so the pointer can reach the link. A click keeps it open; Esc, the x, a second
+// click or a click elsewhere closes it. A citation and its entry in the references mark each other.
+const REFS = DATA.refs || {};
+const pop = $('div', 'pop'); pop.hidden = true; pop.setAttribute('role', 'dialog'); document.body.append(pop);
+let popFor = null, popPinned = false, popT = null;
+const markRef = (key, on) => document.querySelectorAll(`.cite[data-cite="${key}"], .refentry[data-ref="${key}"]`)
+  .forEach(e => e.classList.toggle('chov', on));
+function openPop(el, pinned) {
+  const key = el.dataset.cite, ref = REFS[key];
+  if (!ref) return;
+  clearTimeout(popT);
+  if (popFor && popFor !== el) { markRef(popFor.dataset.cite, false); popFor.classList.remove('cpin'); }
+  popFor = el; popPinned = !!pinned;
+  markRef(key, true); el.classList.toggle('cpin', popPinned);
+  pop.classList.toggle('pinned', popPinned);
+  pop.innerHTML = ref.html;
+  pop.querySelectorAll('a[href^="http"]').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+  const x = $('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', closePop);
+  pop.prepend(x);
+  pop.hidden = false;
+  const docW = document.documentElement.clientWidth, pw = Math.min(460, docW - 24);
+  pop.style.width = pw + 'px';
+  // under the line of the citation the pointer is on (a citation may wrap over two lines)
+  const rects = [...el.getClientRects()], r = rects[0] || el.getBoundingClientRect();
+  const left = Math.max(12, Math.min(r.left + r.width / 2 - pw / 2, docW - pw - 12));
+  const below = r.bottom + 6, h = pop.offsetHeight;
+  const top = below + h + 8 > window.innerHeight && r.top - h - 6 > 0 ? r.top - h - 6 : below;
+  pop.style.left = (left + window.scrollX) + 'px';
+  pop.style.top = (top + window.scrollY) + 'px';
+}
+function closePop() {
+  clearTimeout(popT);
+  if (!popFor) return;
+  markRef(popFor.dataset.cite, false); popFor.classList.remove('cpin');
+  popFor = null; popPinned = false; pop.hidden = true;
+}
+document.addEventListener('pointerover', e => {
+  const c = e.target.closest && e.target.closest('.cite');
+  if (c) { clearTimeout(popT); if (popFor !== c && !popPinned) popT = setTimeout(() => openPop(c, false), 150); return; }
+  if (e.target.closest && e.target.closest('.pop')) { clearTimeout(popT); return; }
+  const r = e.target.closest && e.target.closest('.refentry');
+  document.querySelectorAll('.refentry.chov, .cite.chov').forEach(x => { if (!popFor || x.dataset.cite !== popFor.dataset.cite && x.dataset.ref !== popFor.dataset.cite) x.classList.remove('chov'); });
+  if (r) markRef(r.dataset.ref, true);
+  if (popFor && !popPinned) { clearTimeout(popT); popT = setTimeout(closePop, 250); }
+});
+document.addEventListener('click', e => {
+  const c = e.target.closest('.cite');
+  if (c) { clickUsed = true; if (popFor === c && popPinned) closePop(); else openPop(c, true); return; }
+  if (popFor && !e.target.closest('.pop')) closePop();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && popFor) closePop();
+  const c = e.target.closest && e.target.closest('.cite');
+  if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openPop(c, true); }
+});
+document.addEventListener('focusin', e => { const c = e.target.closest && e.target.closest('.cite'); if (c && !popPinned) openPop(c, false); });
+document.addEventListener('focusout', e => { const c = e.target.closest && e.target.closest('.cite'); if (c && !popPinned && popFor === c) closePop(); });
+window.addEventListener('resize', () => { if (popFor && !popPinned) closePop(); });
+
+// ------------------------------------------------------------------ tabs
+const content = document.getElementById('content'), main = document.getElementById('main');
+wire(content);
+let nav = { top: 'methods', g: 0, t: 0 };            // the document opens on its methods
+try { const v = JSON.parse(localStorage.getItem('srd-nav') || 'null'); if (v && (v.top === 'methods' || v.top === 'results') && DATA.groups[v.g] && DATA.groups[v.g].tabs[v.t]) nav = v; } catch (e) {}
+function save() { try { localStorage.setItem('srd-nav', JSON.stringify(nav)); } catch (e) {} }
+function chips(host, items, on, pick) {
+  host.replaceChildren();
+  items.forEach((label, i) => { const b = $('button', 'chip', label); b.type = 'button'; b.setAttribute('aria-pressed', String(i === on));
+    b.addEventListener('click', () => pick(i)); host.append(b, document.createTextNode(' ')); });
+}
+function render() {
+  pin = null; hov = null; curRow = null; closePop();
+  const isM = nav.top === 'methods';
+  document.getElementById('tabMethods').setAttribute('aria-selected', String(isM));
+  document.getElementById('tabResults').setAttribute('aria-selected', String(!isM));
+  main.classList.toggle('methods', isM);
+  document.getElementById('groupbar').hidden = isM || DATA.groups.length < 2;
+  const G = DATA.groups[nav.g];
+  document.getElementById('tabbar').hidden = isM || G.tabs.length < 2;
+  content.replaceChildren();
+  if (isM) {
+    const art = $('div', 'box prose');
+    DATA.methods.forEach(s => {
+      if (s.h) art.append($('h2', null, s.h));
+      s.p.forEach(h => art.append(html('p', null, h)));
+      if (DATA.people_info && s.h === DATA.people_info.section) art.append(participantsBlock());
+    });
+    art.querySelectorAll('.ref').forEach(sp => { sp.tabIndex = 0; sp.setAttribute('role', 'button'); });
+    content.append(art);
+    drawTraitsNow();
+    save(); return;
+  }
+  chips(document.getElementById('groups'), DATA.groups.map(g => g.label), nav.g, i => { nav.g = i; nav.t = 0; render(); });
+  chips(document.getElementById('tabs'), G.tabs.map(t => t.label), nav.t, i => { nav.t = i; render(); });
+  const tab = G.tabs[nav.t];
+  const rb = $('div', 'box results');
+  rb.append($('h2', null, 'Results'));
+  tab.text.forEach(h => rb.append(html('p', null, h)));
+  rb.querySelectorAll('.ref').forEach(sp => { sp.tabIndex = 0; sp.setAttribute('role', 'button'); });
+  content.append(rb);
+  const tb = $('div', 'box');
+  tb.append($('h2', null, tab.label));
+  const corr = tab.kind === 'corr';
+  const sc = $('div', 'tablebox'); sc.append(corr ? corrTable(tab) : mainTable(tab)); tb.append(hscroll(sc));
+  const R0 = ROWS[tab.rows[0]];
+  tb.append($('p', 'note', corr ? corrNote(R0) : `Mean (SD) of the ${R0.n} participants. p: ${DESIGN}` +
+    (DATA.nPerm ? `, exact p-values from all ${DATA.nPerm.toLocaleString('en')} sign-flip permutations` : '') +
+    `; bold: p ≤ ${ALPHA}. Hover a row, a value or a p-value to see its figure and statistics; click to keep them.`));
+  content.append(tb);
+  const det = $('details', 'box');
+  det.append($('summary', null, 'Values per participant'));
+  const ps = $('div', 'tablebox'); ps.append(corr ? corrPeopleTable(tab) : peopleTable(tab)); det.append(hscroll(ps));
+  const dl = $('button', 'btn', 'Download these values (CSV)'); dl.type = 'button'; dl.style.marginTop = '8px';
+  dl.addEventListener('click', () => download(tab.label.replace(/[\\/:*?"<>|]/g, '') + '.csv', corr ? corrCsv(tab) : csvOf(tab)));
+  det.append(dl);
+  content.append(det);
+  showRow(tab.rows[0]);
+  paint();
+  save();
+}
+document.getElementById('tabMethods').addEventListener('click', () => { nav.top = 'methods'; render(); });
+document.getElementById('tabResults').addEventListener('click', () => { nav.top = 'results'; render(); });
+document.getElementById('brand').textContent = DATA.title;
+document.getElementById('sub').textContent = DATA.subtitle;
+document.getElementById('foot').innerHTML = DATA.footer;
+render();
+</script>
+</body>
+</html>

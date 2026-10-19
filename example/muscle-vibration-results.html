@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muscle vibrations: accelerometry and ultrafast ultrasonography</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f7f9; --surface: #ffffff; --ink: #16191d; --ink-2: #454b54; --muted: #6b717a;
+    --line: #c9cdd3; --grid: #e6e8eb; --rule: #16191d; --focus: #111418; --chip: #eceef1;
+    --chip-on: #16191d; --chip-on-ink: #ffffff; --row: #eef1f5; --hl: #d7263d; --shade: rgba(0,0,0,.18);
+    --sel-soft: #eaf1f9; --sel: #d6e3f2; --lift: #ffffff; --lift-sh: rgba(0, 35, 80, .28); --lift-sh2: rgba(0, 35, 80, .42);
+    --pline: #a6a6a6; --cross: #3d3d3d; --link: #1f5fbf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #121417; --surface: #1b1e22; --ink: #e9ebee; --ink-2: #b9bec5; --muted: #8e959e;
+      --line: #454b53; --grid: #2b2f35; --rule: #e9ebee; --focus: #ffffff; --chip: #262a30;
+      --chip-on: #e9ebee; --chip-on-ink: #121417; --row: #262a30; --hl: #ff5a6e; --shade: rgba(0,0,0,.6);
+      --sel-soft: #22303f; --sel: #2e4560; --lift: #2a3038; --lift-sh: rgba(0, 0, 0, .6); --lift-sh2: rgba(0, 0, 0, .85);
+      --pline: #5a5f66; --cross: #c9cdd3; --link: #7fb0ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121417; --surface: #1b1e22; --ink: #e9ebee; --ink-2: #b9bec5; --muted: #8e959e;
+    --line: #454b53; --grid: #2b2f35; --rule: #e9ebee; --focus: #ffffff; --chip: #262a30;
+    --chip-on: #e9ebee; --chip-on-ink: #121417; --row: #262a30; --hl: #ff5a6e; --shade: rgba(0,0,0,.6);
+    --sel-soft: #22303f; --sel: #2e4560; --lift: #2a3038; --lift-sh: rgba(0, 0, 0, .6); --lift-sh2: rgba(0, 0, 0, .85);
+      --pline: #5a5f66; --cross: #c9cdd3; --link: #7fb0ff;
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .top { position: sticky; top: 0; z-index: 20; display: flex; align-items: stretch; gap: 4px; min-height: 52px;
+         padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; margin: 0 18px 0 0; padding: 8px 22px 8px 0; border-right: 1px solid var(--line);
+           font-size: 16px; font-weight: 700; line-height: 1.25; max-width: 520px; }
+  .top nav { display: flex; align-items: stretch; gap: 2px; }
+  .tab { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13.5px; font-weight: 650;
+         letter-spacing: .09em; text-transform: uppercase; padding: 0 16px; cursor: pointer;
+         border-bottom: 3px solid transparent; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  .wrap { max-width: 1900px; margin: 0 auto; padding: 0 24px; }
+  .sub { color: var(--ink-2); margin: 14px 0 2px; max-width: 1060px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 10px; }
+  .controls .lab { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; min-width: 64px; }
+  .chip { border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+          border-radius: 999px; padding: 5px 13px; font: inherit; cursor: pointer; }
+  .chip:hover { border-color: var(--ink-2); }
+  .chip[aria-pressed="true"] { background: var(--chip-on); color: var(--chip-on-ink); border-color: var(--chip-on); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 12px 0 24px; align-items: start; }
+  main.methods aside { display: none; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin-bottom: 14px; }
+  .box h2 { font-size: 15px; font-weight: 650; margin: 0 0 8px; }
+  .prose { max-width: 1060px; }
+  .prose h2 { font-size: 16px; margin: 14px 0 6px; }
+  .prose h2:first-child { margin-top: 2px; }
+  .prose p { margin: 0 0 9px; }
+  .results p { margin: 0 0 8px; max-width: 1100px; }
+  .results p:last-child { margin-bottom: 0; }
+  /* a statistic of a text: linked to its table and figure */
+  .ref { border-bottom: 1px dotted color-mix(in srgb, var(--link) 60%, transparent); border-radius: 3px; cursor: pointer;
+          transition: background-color .12s; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .ref:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  /* the house style of a marked statistic: soft blue when hovered, deeper when kept (pinned) */
+  .ref.hov { background: var(--sel-soft); box-shadow: 0 0 0 2px var(--sel-soft); }
+  .ref.on, .ref.pinned { background: var(--sel); box-shadow: 0 0 0 2px var(--sel); }
+  .tablebox { overflow-x: auto; }
+  table.t { border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  table.t th, table.t td { padding: 4px 8px; white-space: nowrap; }
+  table.t thead tr:first-child th { border-top: 2px solid var(--rule); font-weight: 650; }
+  table.t thead tr:last-child th { border-bottom: 1.5px solid var(--rule); font-weight: 500; color: var(--ink-2); font-size: 12px; }
+  table.t th { text-align: center; }
+  table.t th:first-child, table.t td:first-child { text-align: left; }
+  table.t td { text-align: center; }
+  table.t td.u { color: var(--ink-2); }
+  table.t tbody tr:last-child td { border-bottom: 2px solid var(--rule); }
+  table.t tr.data { cursor: pointer; }
+  table.t tr.data:hover td { background: var(--row); }
+  table.t tr.data.cur td:first-child { box-shadow: inset 3px 0 0 var(--ink-2); }
+  table.t td.k { cursor: pointer; }
+  table.t td.hov { background: var(--sel-soft) !important; }
+  table.t td.on, table.t td.pinned { background: var(--sel) !important; }
+  table.t .b, table.s .b { font-weight: 700; }
+  .key { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  .note { color: var(--muted); font-size: 12px; margin: 8px 0 0; max-width: 1100px; }
+  /* a table wider than its box: an arrow each side on hover, a click scrolls it */
+  .hscroll { position: relative; }
+  .harrow { position: absolute; z-index: 4; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; padding: 0;
+            display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line);
+            background: var(--surface); color: var(--ink); box-shadow: 0 2px 8px var(--shade); cursor: pointer;
+            opacity: 0; pointer-events: none; transition: opacity .15s; }
+  .harrow.l { left: 6px; } .harrow.r { right: 6px; }
+  .hscroll.canl:hover .harrow.l, .hscroll.canr:hover .harrow.r { opacity: .94; pointer-events: auto; }
+  details.box > summary { cursor: pointer; font-weight: 650; font-size: 15px; }
+  details.box[open] > summary { margin-bottom: 8px; }
+  table.pp td, table.pp th { padding: 3px 8px; }
+  table.pp td.g0, table.pp th.g0 { border-left: 1px solid var(--line); }
+  table.pp td.sh, table.pp th.sh { background: color-mix(in srgb, var(--row) 70%, transparent); }
+  table.pp tbody tr:hover td, table.pp tbody tr.hl td { background: var(--row); }
+  table.pp tbody tr.hl td:first-child { color: var(--hl); font-weight: 700; }
+  .btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px;
+         padding: 4px 12px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .btn:hover { background: var(--chip); }
+  /* the figure and statistics panel */
+  aside { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .kicker { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  aside h3 { font-size: 16px; margin: 2px 0 6px; font-weight: 650; }
+  .hint { color: var(--muted); font-size: 12px; margin: 0 0 6px; }
+  .figwrap { position: relative; }
+  .fig svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .fig text { font-family: inherit; }
+  .fig .tick { fill: var(--ink-2); }
+  .fig .ttl { fill: var(--ink); font-weight: 650; }
+  .fig .cap { fill: var(--ink-2); }
+  .fig .cap .b { font-weight: 700; fill: var(--ink); }
+  .fig .grid { stroke: var(--grid); }
+  .fig .zero { stroke: var(--muted); stroke-dasharray: 3 3; }
+  .fig .axis { stroke: var(--line); }
+  .fig .pl { fill: var(--ink); }
+  .fig .pl.ns { fill: var(--muted); }
+  .fig .br { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+  .fig .out { opacity: .42; }
+  .fig .mean { stroke: var(--ink); stroke-width: 2.6; stroke-linecap: round; pointer-events: none; }
+  .fig .sdc { fill: none; stroke-width: 3.2; stroke-linejoin: round; stroke-linecap: round; }
+  .fig .mv { fill: var(--ink); stroke: var(--surface); pointer-events: none; }
+  .fig .pline { fill: none; stroke: var(--pline); stroke-width: .8; }
+  .fig .pline.hl { stroke: var(--ink); stroke-width: 2; }
+  .fig .ind { stroke: var(--cross); stroke-width: 1.3; }
+  .fig .ind.hl { stroke: var(--ink); stroke-width: 2.8; }
+  .fig .ring { display: none; }
+  .fig g.pt.hov .ind, .fig g.pt.on .ind { stroke: var(--ink); stroke-width: 2.6; }
+  .fig .fit { fill: none; stroke: var(--ink); stroke-width: 2; }
+  .fig .fit.ns { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .fig .stl { fill: var(--ink-2); }
+  .fig .stl.b { fill: var(--ink); font-weight: 700; }
+  .pblock { margin: 6px 0 14px; padding: 10px 0 2px; border-top: 1px solid var(--grid); border-bottom: 1px solid var(--grid); }
+  .pblock h3 { font-size: 14px; margin: 0 0 6px; }
+  .pblock .tablebox { margin-bottom: 8px; }
+  .pblock table.t tr[data-k] { cursor: pointer; }
+  .pblock table.t tr.hov td { background: var(--sel-soft); }
+  .pblock table.t tr.on td, .pblock table.t tr.pinned td { background: var(--sel); }
+  .pblock details > summary { cursor: pointer; font-weight: 600; margin: 6px 0; }
+  /* a citation: its reference in a popover; the citation and its entry in the list mark each other */
+  .cite { border-bottom: 1.5px dotted color-mix(in srgb, var(--link) 75%, transparent); border-radius: 3px; cursor: pointer;
+          transition: background-color .12s; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .cite.chov, .refentry.chov { background: var(--sel-soft); box-shadow: 0 0 0 2px var(--sel-soft); }
+  .cite.cpin { background: var(--sel); box-shadow: 0 0 0 2px var(--sel); }
+  .refentry { border-radius: 3px; transition: background-color .12s; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .pop { position: absolute; z-index: 30; background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+         border-radius: 8px; box-shadow: 0 10px 34px var(--shade); padding: 9px 12px 10px; font-size: 13px; line-height: 1.45; }
+  .pop.pinned { border-color: color-mix(in srgb, var(--link) 60%, var(--line)); }
+  .pop .x { float: right; margin: -4px -6px 0 8px; border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+  .fig .hit { fill: transparent; cursor: default; }
+  .fig .pbg, .fig .vbg { fill: transparent; }
+  /* a marked panel or violin is lifted: a card on a soft shadow, deeper when kept (pinned) */
+  .fig .pbg.hov, .fig .vbg.hov { fill: var(--lift); filter: drop-shadow(0 1px 5px var(--lift-sh)); }
+  .fig .pbg.on, .fig .vbg.on, .fig .pbg.pinned, .fig .vbg.pinned { fill: var(--lift); filter: drop-shadow(0 2px 9px var(--lift-sh2)); }
+  .fig .sbg { fill: transparent; }
+  .fig .brk.hov .br, .fig .brk.on .br { stroke-width: 2.4; }
+  .fig .brk.hov .sbg { fill: var(--sel-soft); }
+  .fig .brk.on .sbg { fill: var(--sel); }
+  .tt { position: absolute; pointer-events: none; background: var(--surface); color: var(--ink);
+        border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font-size: 12px; line-height: 1.4;
+        box-shadow: 0 2px 10px var(--shade); white-space: normal; max-width: min(380px, 92%); display: none; z-index: 6; }
+  .tt .m { color: var(--muted); }
+  .grow { position: absolute; top: 0; right: 0; z-index: 3; width: 28px; height: 28px; padding: 0; border-radius: 6px;
+          border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; opacity: .55;
+          font-size: 15px; line-height: 1; }
+  .grow:hover, .grow:focus-visible { opacity: 1; }
+  .figkey { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+  .stats h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; margin: 14px 0 4px; }
+  table.s { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  table.s th, table.s td { padding: 3px 7px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  table.s th:first-child, table.s td:first-child { text-align: left; white-space: normal; }
+  table.s thead th { color: var(--muted); font-weight: 500; font-size: 11.5px; }
+  table.s tr[data-k] { cursor: pointer; }
+  table.s tr[data-k]:hover td { background: var(--row); }
+  table.s tr.hov td { background: var(--sel-soft) !important; }
+  table.s tr.on td, table.s tr.pinned td { background: var(--sel) !important; }
+  table.s tr.sub td { color: var(--ink-2); font-size: 12px; text-align: left; padding-top: 7px; border-bottom: 1px solid var(--line); }
+  table.s tr.outr td { color: var(--muted); }
+  .snote { color: var(--muted); font-size: 11.5px; margin: 4px 0 0; }
+  .pbar { display: none; }
+  @media (min-width: 1400px) {
+    main:not(.methods) { grid-template-columns: minmax(0, 1fr) 560px; }
+    aside { position: sticky; top: 64px; max-height: calc(100vh - 76px); overflow: auto; }
+  }
+  @media (max-width: 1399px) {
+    aside { position: sticky; bottom: 0; max-height: 50vh; overflow: auto; box-shadow: 0 -4px 16px var(--shade); }
+    .pbar { display: flex; align-items: center; gap: 10px; position: sticky; top: -12px; z-index: 5;
+            margin: -12px -14px 8px; padding: 6px 10px 6px 14px; background: var(--surface);
+            border-bottom: 1px solid var(--grid); border-radius: 8px 8px 0 0; }
+    aside.collapsed { overflow: hidden; }
+    aside.collapsed #panelBody { display: none; }
+    aside.collapsed .pbar { margin-bottom: -12px; border-bottom: 0; border-radius: 8px; }
+  }
+  .ptitle { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  dialog.big { width: min(1200px, 94vw); max-height: 92vh; border: 1px solid var(--line); border-radius: 10px;
+               background: var(--surface); color: var(--ink); padding: 12px 16px 16px; }
+  dialog.big::backdrop { background: rgba(0, 0, 0, .45); }
+  .dhead { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .dhead h3 { flex: 1; margin: 0; font-size: 16px; }
+  footer { color: var(--muted); font-size: 12px; padding: 4px 0 28px; max-width: 1100px; }
+  .stats { overflow-x: auto; }
+  @media (max-width: 700px) {
+    table.s th, table.s td { padding: 3px 4px; }
+    table.s thead th { white-space: normal; }
+    .wrap { padding: 0 16px; }
+    .top { padding: 0 12px; flex-wrap: wrap; }
+    .brand { border-right: 0; padding-right: 0; margin-right: 0; width: 100%; font-size: 15px; }
+    .tab { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="brand" id="brand"></h1>
+  <nav role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tabMethods" type="button">Methods</button>
+    <button class="tab" role="tab" id="tabResults" type="button">Results</button>
+  </nav>
+</header>
+<div class="wrap">
+  <p class="sub" id="sub"></p>
+  <div class="controls" id="groupbar" role="toolbar" aria-label="Results"><span class="lab">Results</span><span id="groups"></span></div>
+  <div class="controls" id="tabbar" role="toolbar" aria-label="Variable"><span class="lab">Variable</span><span id="tabs"></span></div>
+  <main id="main">
+    <div id="content"></div>
+    <aside id="panel" aria-label="Figure and statistics">
+      <div class="pbar"><span class="ptitle" id="ptitle">Figure and statistics</span>
+        <button class="btn" id="pToggle" type="button" aria-expanded="true" aria-controls="panelBody">Hide figure</button></div>
+      <div id="panelBody" aria-live="polite"></div>
+    </aside>
+  </main>
+  <footer id="foot"></footer>
+</div>
+<dialog class="big" id="big" aria-labelledby="bigTitle">
+  <div class="dhead"><h3 id="bigTitle"></h3><button class="btn" id="bigClose" type="button">Close</button></div>
+  <div id="bigBody"></div>
+</dialog>
+
+<script>
+const DATA = {"title":"Muscle vibrations: accelerometry and ultrafast ultrasonography","subtitle":"Vastus lateralis vibrations after an impact, measured with a skin-mounted accelerometer and with ultrafast ultrasonography in a relaxed and a contracted muscle (15 participants). Every result of the extracted variables, with each participant's values.","footer":"Data and methods: Trama R, Hautier CA, Souron R, Lapole T, Fouré A, Blache Y (2021). Is accelerometry an effective method to assess muscle vibrations in comparison to ultrafast ultrasonography? <i>IEEE Transactions on Biomedical Engineering<\/i>, <a href=\"https://doi.org/10.1109/TBME.2020.3035838\">doi:10.1109/TBME.2020.3035838<\/a>. Document built with <a href=\"https://github.com/tramarobin/linked-results\">linked-results<\/a>.","alpha":0.05,"nPerm":16384.0,"people":["P1","P2","P3","P4","P5","P6","P7","P8","P9","P10","P11","P12","P13","P14","P15"],"factors":[{"id":"Device","name":"Device","noun":"device","plural":"devices","within":true,"ref":"Echo","levels":[{"code":"Echo","name":"Ultrasonography","short":"US","color":"#2a78d6","color_dark":"#3987e5"},{"code":"ACC","name":"Accelerometry","short":"ACC","color":"#eb6834","color_dark":"#d95926"}]},{"id":"Activation","name":"Activation","noun":"activation level","plural":"activation levels","within":true,"ref":"R","levels":[{"code":"R","name":"Relaxed","short":"Relaxed","color":"#1baf7a","color_dark":"#199e70"},{"code":"C","name":"Contracted","short":"Contracted","color":"#6250d6","color_dark":"#9085e9"}]}],"terms":["Device","Activation","Device:Activation"],"split":"Axis","groups":[{"label":"Vibrations","tabs":[{"label":"Peak acceleration","rows":["peak_acceleration|L","peak_acceleration|V"],"text":["<b>Lateral (mediolateral) axis.<\/b> The peak acceleration was lower with accelerometry than with ultrasonography (<span class=\"ref\" data-row=\"peak_acceleration|L\" data-k=\"m:Device:ACC~Echo\">−9.8 m·s⁻², −29.4%, p = 0.010<\/span>) and higher in the contracted muscle than in the relaxed muscle (<span class=\"ref\" data-row=\"peak_acceleration|L\" data-k=\"m:Activation:C~R\">+14.7 m·s⁻², +69.6%, p &lt; 0.001<\/span>), with no interaction between the device and the activation level (<span class=\"ref\" data-row=\"peak_acceleration|L\" data-k=\"t:Device:Activation\">p = 0.850<\/span>).","<b>Vertical (anteroposterior) axis.<\/b> The peak acceleration was higher with accelerometry than with ultrasonography (<span class=\"ref\" data-row=\"peak_acceleration|V\" data-k=\"m:Device:ACC~Echo\">+32.0 m·s⁻², +113.4%, p &lt; 0.001<\/span>) and higher in the contracted muscle than in the relaxed muscle (<span class=\"ref\" data-row=\"peak_acceleration|V\" data-k=\"m:Activation:C~R\">+26.0 m·s⁻², +83.4%, p &lt; 0.001<\/span>), with no interaction between the device and the activation level (<span class=\"ref\" data-row=\"peak_acceleration|V\" data-k=\"t:Device:Activation\">p = 0.267<\/span>)."],"multi":false},{"label":"Main frequency","rows":["main_frequency|L","main_frequency|V"],"text":["<b>Lateral (mediolateral) axis.<\/b> The device effect depended on the activation level (<span class=\"ref\" data-row=\"main_frequency|L\" data-k=\"t:Device:Activation\">Device × Activation, p &lt; 0.001<\/span>). The main frequency was lower with accelerometry than with ultrasonography, more in the contracted muscle (<span class=\"ref\" data-row=\"main_frequency|L\" data-k=\"x:Device@Activation=C:ACC~Echo\">−26.9 Hz, −48.9%, p &lt; 0.001<\/span>) than in the relaxed muscle (<span class=\"ref\" data-row=\"main_frequency|L\" data-k=\"x:Device@Activation=R:ACC~Echo\">−10.0 Hz, −34.8%, p = 0.003<\/span>). It was higher in the contracted muscle than in the relaxed muscle, more with ultrasonography (<span class=\"ref\" data-row=\"main_frequency|L\" data-k=\"x:Activation@Device=Echo:C~R\">+26.3 Hz, +91.3%, p &lt; 0.001<\/span>) than with accelerometry (<span class=\"ref\" data-row=\"main_frequency|L\" data-k=\"x:Activation@Device=ACC:C~R\">+9.4 Hz, +49.8%, p = 0.005<\/span>).","<b>Vertical (anteroposterior) axis.<\/b> The device effect depended on the activation level (<span class=\"ref\" data-row=\"main_frequency|V\" data-k=\"t:Device:Activation\">Device × Activation, p = 0.040<\/span>). The main frequency was lower with accelerometry than with ultrasonography in the contracted muscle (<span class=\"ref\" data-row=\"main_frequency|V\" data-k=\"x:Device@Activation=C:ACC~Echo\">−9.9 Hz, −18.1%, p = 0.014<\/span>), but did not differ in the relaxed muscle (<span class=\"ref\" data-row=\"main_frequency|V\" data-k=\"x:Device@Activation=R:ACC~Echo\">−4.6 Hz, −12.9%, p = 0.068<\/span>). It was higher in the contracted muscle than in the relaxed muscle, more with ultrasonography (<span class=\"ref\" data-row=\"main_frequency|V\" data-k=\"x:Activation@Device=Echo:C~R\">+19.3 Hz, +54.3%, p &lt; 0.001<\/span>) than with accelerometry (<span class=\"ref\" data-row=\"main_frequency|V\" data-k=\"x:Activation@Device=ACC:C~R\">+14.0 Hz, +45.1%, p &lt; 0.001<\/span>)."],"multi":false},{"label":"Median frequency","rows":["median_frequency|L","median_frequency|V"],"text":["<b>Lateral (mediolateral) axis.<\/b> The device effect depended on the activation level (<span class=\"ref\" data-row=\"median_frequency|L\" data-k=\"t:Device:Activation\">Device × Activation, p &lt; 0.001<\/span>). The median frequency was lower with accelerometry than with ultrasonography, more in the contracted muscle (<span class=\"ref\" data-row=\"median_frequency|L\" data-k=\"x:Device@Activation=C:ACC~Echo\">−16.9 Hz, −27.4%, p &lt; 0.001<\/span>) than in the relaxed muscle (<span class=\"ref\" data-row=\"median_frequency|L\" data-k=\"x:Device@Activation=R:ACC~Echo\">−6.9 Hz, −16.1%, p = 0.013<\/span>). It was higher in the contracted muscle than in the relaxed muscle, more with ultrasonography (<span class=\"ref\" data-row=\"median_frequency|L\" data-k=\"x:Activation@Device=Echo:C~R\">+18.8 Hz, +44.0%, p &lt; 0.001<\/span>) than with accelerometry (<span class=\"ref\" data-row=\"median_frequency|L\" data-k=\"x:Activation@Device=ACC:C~R\">+8.8 Hz, +24.6%, p &lt; 0.001<\/span>).","<b>Vertical (anteroposterior) axis.<\/b> The median frequency was lower with accelerometry than with ultrasonography (<span class=\"ref\" data-row=\"median_frequency|V\" data-k=\"m:Device:ACC~Echo\">−8.0 Hz, −14.0%, p &lt; 0.001<\/span>) and higher in the contracted muscle than in the relaxed muscle (<span class=\"ref\" data-row=\"median_frequency|V\" data-k=\"m:Activation:C~R\">+13.6 Hz, +29.5%, p &lt; 0.001<\/span>), with no interaction between the device and the activation level (<span class=\"ref\" data-row=\"median_frequency|V\" data-k=\"t:Device:Activation\">p = 0.523<\/span>)."],"multi":false},{"label":"Damping","rows":["damping|L","damping|V"],"text":["<b>Lateral (mediolateral) axis.<\/b> Damping was lower with accelerometry than with ultrasonography (<span class=\"ref\" data-row=\"damping|L\" data-k=\"m:Device:ACC~Echo\">−12.4 s⁻¹, −37.4%, p &lt; 0.001<\/span>) and higher in the contracted muscle than in the relaxed muscle (<span class=\"ref\" data-row=\"damping|L\" data-k=\"m:Activation:C~R\">+13.4 s⁻¹, +65.6%, p &lt; 0.001<\/span>), with no interaction between the device and the activation level (<span class=\"ref\" data-row=\"damping|L\" data-k=\"t:Device:Activation\">p = 0.255<\/span>).","<b>Vertical (anteroposterior) axis.<\/b> Damping was lower with accelerometry than with ultrasonography (<span class=\"ref\" data-row=\"damping|V\" data-k=\"m:Device:ACC~Echo\">−5.7 s⁻¹, −15.1%, p = 0.007<\/span>) and higher in the contracted muscle than in the relaxed muscle (<span class=\"ref\" data-row=\"damping|V\" data-k=\"m:Activation:C~R\">+4.7 s⁻¹, +14.5%, p = 0.014<\/span>), with no interaction between the device and the activation level (<span class=\"ref\" data-row=\"damping|V\" data-k=\"t:Device:Activation\">p = 0.465<\/span>)."],"multi":false},{"label":"Correlation with fat thickness","rows":["c:peak_acceleration|L","c:peak_acceleration|V","c:main_frequency|L","c:main_frequency|V","c:median_frequency|L","c:median_frequency|V","c:damping|L","c:damping|V"],"text":["<b>Lateral (mediolateral) axis.<\/b> The relative difference between accelerometry and ultrasonography did not correlate significantly with the fat thickness for any variable (smallest <span class=\"ref\" data-row=\"c:peak_acceleration|L\" data-k=\"r:Activation=C\">p = 0.544<\/span>).","<b>Vertical (anteroposterior) axis.<\/b> The relative difference between accelerometry and ultrasonography decreased with the fat thickness for the main frequency in the contracted muscle (<span class=\"ref\" data-row=\"c:main_frequency|V\" data-k=\"r:Activation=C\">r = −0.77, strong, −3.44% per mm, p = 0.005<\/span>), the median frequency in the relaxed muscle (<span class=\"ref\" data-row=\"c:median_frequency|V\" data-k=\"r:Activation=R\">r = −0.83, very strong, −2.32% per mm, p = 0.001<\/span>), the median frequency in the contracted muscle (<span class=\"ref\" data-row=\"c:median_frequency|V\" data-k=\"r:Activation=C\">r = −0.68, strong, −1.73% per mm, p = 0.029<\/span>) and damping in the relaxed muscle (<span class=\"ref\" data-row=\"c:damping|V\" data-k=\"r:Activation=R\">r = −0.79, strong, −3.41% per mm, p = 0.003<\/span>). The other 4 correlations were not significant (<span class=\"ref\" data-row=\"c:main_frequency|V\" data-k=\"r:Activation=R\">p ≥ 0.192<\/span>)."],"multi":true,"kind":"corr"}]},{"label":"EMG","tabs":[{"label":"Activation","rows":["emg"],"text":["The activation was higher in the contracted muscle than in the relaxed muscle (<span class=\"ref\" data-row=\"emg\" data-k=\"m:Activation:C~R\">+37.1% of maximal, p &lt; 0.001<\/span>); it did not differ between devices (<span class=\"ref\" data-row=\"emg\" data-k=\"t:Device\">p = 0.687<\/span>), with no interaction between the device and the activation level (<span class=\"ref\" data-row=\"emg\" data-k=\"t:Device:Activation\">p = 0.994<\/span>)."],"multi":false}]}],"rows":{"peak_acceleration|L":{"id":"peak_acceleration|L","outcome":"peak_acceleration","split":"L","name":"Peak acceleration","noun":"the peak acceleration","unit":"m·s⁻²","dec":1,"relative":true,"splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","n":15,"values":{"Echo|R":[16.3317137825,33.77450824,38.2755216025,35.63016328,29.772407255,14.6394782006667,34.26323643,12.0594316575,21.58856335,38.429187055,15.619662165,31.5921978075,26.7051087725,15.6392436125,21.7906842225],"ACC|R":[12.485004635,22.4731547866667,18.3406649325,11.8119482575,30.11762203,25.3850421925,17.31339442,13.22983451,16.3175126425,11.7466665075,9.703278127,9.2992581085,13.6509347275,16.72070518,17.8124031],"Echo|C":[20.4977918033333,33.88976144,48.570498915,65.3483539633333,27.931731415,58.62410017,35.087174905,49.03870642,40.6397868425,35.10085404,31.872067375,48.440157365,45.682964505,31.510345726,41.173372425],"ACC|C":[6.704082707,30.2964696066667,47.52867897,16.1370578566667,67.40742947,38.3126207825,27.619554595,22.25180772,14.13388978,19.048560625,20.6487156675,30.1834927425,34.56529697,42.865249515,41.6318664375]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":25.740740495544447,"sd":9.414207949917822},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":16.42716161047778,"sd":5.876017460944008},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":40.893844487344445,"sd":11.91479023880724},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":30.622318229688894,"sd":15.471945164917516}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[18.41475279291665,33.83213484,43.42301025875,50.48925862166665,28.852069335000003,36.631789185333346,34.675205667499995,30.549069038749998,31.11417509625,36.7650205475,23.74586477,40.016177586249995,36.19403663875,23.57479466925,31.48202832375],"n":15,"mean":33.31729249144444,"sd":8.104547931095343,"emm":33.31729249144445},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[9.594543671,26.3848121966667,32.93467195125,13.97450305708335,48.762525749999995,31.8488314875,22.466474507500003,17.740821115,15.22570121125,15.397613566250001,15.17599689725,19.7413754255,24.10811584875,29.7929773475,29.722134768750003],"n":15,"mean":23.524739920083338,"sd":10.070368898178266,"emm":23.524739920083334},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[14.40835920875,28.12383151333335,28.3080932675,23.72105576875,29.9450146425,20.012260196583348,25.788315425,12.64463308375,18.95303799625,25.08792678125,12.661470146,20.445727958,20.17802175,16.17997439625,19.80154366125],"n":15,"mean":21.083951053011113,"sd":5.63609848368724,"emm":21.083951053011113},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[13.60093725516665,32.09311552333335,48.0495889425,40.74270591,47.6695804425,48.46836047625,31.353364749999997,35.64525707,27.386838311250003,27.0747073325,26.26039152125,39.31182505375,40.124130737499996,37.1877976205,41.40261943125],"n":15,"mean":35.75808135851666,"sd":9.65264249662966,"emm":35.75808135851667}],"aov":[{"key":"t:Device","term":"Device","F":8.942405356,"df1":1.0,"df2":14.0,"thr":4.572291041,"p":0.009521484375,"sig":true},{"key":"t:Activation","term":"Activation","F":42.2000681,"df1":1.0,"df2":14.0,"thr":4.737648274,"p":0.0001220703125,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":0.03669981677,"df1":1.0,"df2":14.0,"thr":4.637249253,"p":0.849609375,"sig":false}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":23.524739920083334,"mr":33.31729249144445,"diff":-9.792552571361114,"rel":-29.391801791444323,"t":-2.990385486,"df":14.0,"thr":2.138291617,"p":0.009521484375,"pOwn":0.009521484375,"g":-0.7298700906,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":35.75808135851667,"mr":21.083951053011113,"diff":14.674130305505557,"rel":69.59857888405534,"t":6.496157949,"df":14.0,"thr":2.176613947,"p":0.0001220703125,"pOwn":0.0001220703125,"g":1.585531836,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":16.42716161047778,"mr":25.740740495544447,"diff":-9.313578885066669,"rel":-36.18224925067244,"t":-3.303222585,"df":14.0,"thr":2.833798869,"p":0.02270507812,"pOwn":0.006225585938,"g":-0.8062249429,"sig":true,"inside":false},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":30.622318229688894,"mr":40.893844487344445,"diff":-10.271526257655552,"rel":-25.11753635888725,"t":-2.014431147,"df":14.0,"thr":2.761178888,"p":0.1958618164,"pOwn":0.06378173828,"g":-0.4916667267,"sig":false,"inside":false},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":40.893844487344445,"mr":25.740740495544447,"diff":15.153103991799998,"rel":58.86817434184887,"t":4.166083144,"df":14.0,"thr":2.820003112,"p":0.004089355469,"pOwn":0.001037597656,"g":1.016825254,"sig":true,"inside":false},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":30.622318229688894,"mr":16.42716161047778,"diff":14.195156619211115,"rel":86.41271666894043,"t":4.610891088,"df":14.0,"thr":2.834174745,"p":0.001953125,"pOwn":0.00048828125,"g":1.125390526,"sig":true,"inside":false}],"nPerm":[16384.0],"gComputed":false},"peak_acceleration|V":{"id":"peak_acceleration|V","outcome":"peak_acceleration","split":"V","name":"Peak acceleration","noun":"the peak acceleration","unit":"m·s⁻²","dec":1,"relative":true,"splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","n":15,"values":{"Echo|R":[23.9552570225,12.11132607,20.3632142825,25.9107838625,8.55711224,17.54973819,13.4434233025,13.8637081275,28.53579787,12.9142305225,14.27817415,17.156111835,15.50192837,16.5217932625,26.4884090275],"ACC|R":[33.215402355,86.5384017333333,45.9046047725,40.34679645,37.84486725,41.7005566775,60.4598172675,44.7180466775,40.18684449,46.61840707,44.428572055,24.7124086525,30.378541205,52.42127483,40.12260596],"Echo|C":[41.1992539933333,35.3259288,61.7633736625,21.95793635,25.3960937625,51.6142686275,46.87708642,48.5428310533333,41.54216594,26.2061833625,14.427805045,22.67807453,14.442486439,48.50030172,79.341474905],"ACC|C":[19.2805661833333,97.0280851466667,33.8812571875,90.79465981,79.8003219675,50.5123412525,68.66514034,85.73301657,101.31210186,79.0349479275,95.3824374,51.80542532,86.177489935,73.6298680975,125.09244085]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":17.810067209,"sd":5.957700102867614},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":44.639809829722225,"sd":14.432992382135515},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":38.65435097404444,"sd":18.290416803388936},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":75.87533998983332,"sd":27.50940510877661}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[32.57725550791665,23.718627435000002,41.0632939725,23.93436010625,16.97660300125,34.58200340875,30.16025486125,31.203269590416653,35.038981905,19.5602069425,14.352989597499999,19.9170931825,14.9722074045,32.511047491250004,52.91494196625],"n":15,"mean":28.232209091522222,"sd":10.652284392390598,"emm":28.232209091522222},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[26.24798426916665,91.78324344,39.89293098,65.57072812999999,58.822594608749995,46.106448965,64.56247880375,65.22553162375,70.74947317499999,62.82667749875,69.9055047275,38.25891698625,58.27801557,63.02557146375,82.607523405],"n":15,"mean":60.25757490977777,"sd":16.995375530947975,"emm":60.25757490977777},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[28.58532968875,49.32486390166665,33.1339095275,33.12879015625,23.200989745,29.62514743375,36.951620285,29.2908774025,34.36132118,29.76631879625,29.353373102499997,20.93426024375,22.9402347875,34.47153404625,33.30550749375],"n":15,"mean":31.22493851936111,"sd":6.814862784270771,"emm":31.22493851936111},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[30.2399100883333,66.17700697333335,47.822315425,56.37629808,52.598207865,51.06330494,57.771113379999996,67.13792381166665,71.4271339,52.620565645,54.9051212225,37.241749925,50.309988187,61.065084908749995,102.2169578775],"n":15,"mean":57.264845481938885,"sd":16.409561480364065,"emm":57.26484548193888}],"aov":[{"key":"t:Device","term":"Device","F":39.11549607,"df1":1.0,"df2":14.0,"thr":4.683623636,"p":0.000244140625,"sig":true},{"key":"t:Activation","term":"Activation","F":46.20934661,"df1":1.0,"df2":14.0,"thr":4.550846104,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":1.304611507,"df1":1.0,"df2":14.0,"thr":4.704458019,"p":0.266784668,"sig":false}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":60.25757490977777,"mr":28.232209091522222,"diff":32.02536581825555,"rel":113.43556472834555,"t":6.254238248,"df":14.0,"thr":2.164168116,"p":0.000244140625,"pOwn":0.000244140625,"g":1.526485952,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":57.26484548193888,"mr":31.22493851936111,"diff":26.039906962577767,"rel":83.39458201473046,"t":6.797745701,"df":14.0,"thr":2.133271221,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":1.659141035,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":44.639809829722225,"mr":17.810067209,"diff":26.829742620722225,"rel":150.64369104213316,"t":5.980984276,"df":14.0,"thr":2.652025676,"p":0.000244140625,"pOwn":6.103515625e-05,"g":1.459792243,"sig":true,"inside":false},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":75.87533998983332,"mr":38.65435097404444,"diff":37.22098901578888,"rel":96.29184833754412,"t":4.335613014,"df":14.0,"thr":2.759744643,"p":0.004516601562,"pOwn":0.001586914062,"g":1.05820279,"sig":true,"inside":false},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":38.65435097404444,"mr":17.810067209,"diff":20.84428376504444,"rel":117.0365250194629,"t":4.772117492,"df":14.0,"thr":2.704011737,"p":0.001159667969,"pOwn":0.0004272460938,"g":1.164741416,"sig":true,"inside":false},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":75.87533998983332,"mr":44.639809829722225,"diff":31.235530160111097,"rel":69.97236385920658,"t":4.346138834,"df":14.0,"thr":2.702202925,"p":0.003051757812,"pOwn":0.001037597656,"g":1.06077185,"sig":true,"inside":false}],"nPerm":[16384.0],"gComputed":false},"main_frequency|L":{"id":"main_frequency|L","outcome":"main_frequency","split":"L","name":"Main frequency","noun":"the main frequency","unit":"Hz","dec":1,"relative":true,"splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","n":15,"values":{"Echo|R":[24.0,26.3333333333333,49.25,29.75,21.0,24.0,39.25,19.75,36.0,25.0,17.75,28.5,28.0,28.75,34.5],"ACC|R":[19.0,15.6666666666667,22.5,17.5,30.25,23.5,16.5,19.25,18.5,16.0,13.0,13.0,16.0,17.0,24.0],"Echo|C":[41.3333333333333,58.0,60.25,65.6666666666667,51.0,52.5,44.0,54.3333333333333,54.0,56.25,58.0,62.5,64.5,55.4,48.25],"ACC|C":[16.6666666666667,24.0,17.5,34.6666666666667,24.5,32.25,41.0,33.5,25.6666666666667,25.0,23.25,29.5,39.0,25.25,30.25]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":28.788888888888888,"sd":8.21504539850334},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":18.77777777777778,"sd":4.607799059129223},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":55.065555555555555,"sd":6.992511489530571},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":28.13333333333334,"sd":7.077714858557639}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[32.66666666666665,42.16666666666665,54.75,47.70833333333335,36.0,38.25,41.625,37.04166666666665,45.0,40.625,37.875,45.5,46.25,42.075,41.375],"n":15,"mean":41.92722222222222,"sd":5.448526692757701,"emm":41.92722222222222},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[17.83333333333335,19.83333333333335,20.0,26.08333333333335,27.375,27.875,28.75,26.375,22.08333333333335,20.5,18.125,21.25,27.5,21.125,27.125],"n":15,"mean":23.45555555555556,"sd":3.9112952867439965,"emm":23.45555555555556},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[21.5,21.0,35.875,23.625,25.625,23.75,27.875,19.5,27.25,20.5,15.375,20.75,22.0,22.875,29.25],"n":15,"mean":23.783333333333335,"sd":4.886311662866652,"emm":23.78333333333333},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[29.0,41.0,38.875,50.1666666666667,37.75,42.375,42.5,43.91666666666665,39.83333333333335,40.625,40.625,46.0,51.75,40.325,39.25],"n":15,"mean":41.599444444444444,"sd":5.319012084049498,"emm":41.599444444444444}],"aov":[{"key":"t:Device","term":"Device","F":112.0642168,"df1":1.0,"df2":14.0,"thr":4.692572188,"p":6.103515625e-05,"sig":true},{"key":"t:Activation","term":"Activation","F":79.30443312,"df1":1.0,"df2":14.0,"thr":4.736284459,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":28.47928654,"df1":1.0,"df2":14.0,"thr":4.695346579,"p":0.000732421875,"sig":true}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":23.45555555555556,"mr":41.92722222222222,"diff":-18.47166666666666,"rel":-44.0565000198757,"t":-10.58603877,"df":14.0,"thr":2.166234565,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":-2.583758218,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":41.599444444444444,"mr":23.78333333333333,"diff":17.816111111111113,"rel":74.91006774118198,"t":8.905303651,"df":14.0,"thr":2.176300636,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":2.17353743,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":18.77777777777778,"mr":28.788888888888888,"diff":-10.01111111111111,"rel":-34.77421844847549,"t":-4.283486711,"df":14.0,"thr":2.682174595,"p":0.002563476562,"pOwn":0.0008544921875,"g":-1.045480206,"sig":true,"inside":true},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":28.13333333333334,"mr":55.065555555555555,"diff":-26.932222222222215,"rel":-48.90938073811012,"t":-11.32639756,"df":14.0,"thr":2.73079064,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":-2.764459248,"sig":true,"inside":true},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":55.065555555555555,"mr":28.788888888888888,"diff":26.276666666666667,"rel":91.2736395214203,"t":9.530771188,"df":14.0,"thr":2.751396087,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":2.326196694,"sig":true,"inside":true},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":28.13333333333334,"mr":18.77777777777778,"diff":9.355555555555561,"rel":49.82248520710062,"t":4.014636395,"df":14.0,"thr":2.684688135,"p":0.004760742188,"pOwn":0.001586914062,"g":0.9798613066,"sig":true,"inside":true}],"nPerm":[16384.0],"gComputed":false},"main_frequency|V":{"id":"main_frequency|V","outcome":"main_frequency","split":"V","name":"Main frequency","noun":"the main frequency","unit":"Hz","dec":1,"relative":true,"splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","n":15,"values":{"Echo|R":[25.0,19.0,41.0,41.0,31.5,32.6666666666667,36.5,41.0,36.0,39.0,50.5,38.0,41.0,26.0,36.0],"ACC|R":[23.0,20.3333333333333,47.0,41.0,18.0,29.0,40.5,35.5,37.5,31.5,29.0,30.75,28.75,21.25,32.25],"Echo|C":[57.0,63.0,58.25,50.0,61.25,53.5,54.0,55.3333333333333,44.5,57.0,64.0,49.5,63.0,50.0,44.0],"ACC|C":[39.0,62.0,48.25,45.0,31.0,46.5,38.0,52.5,51.6666666666667,49.25,31.5,36.75,44.0,54.75,45.0]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":35.611111111111114,"sd":7.8494430766619745},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":31.022222222222222,"sd":8.304561441806593},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":54.95555555555555,"sd":6.444579568917263},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":45.01111111111111,"sd":8.65176527236161}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[41.0,41.0,49.625,45.5,46.375,43.08333333333335,45.25,48.16666666666665,40.25,48.0,57.25,43.75,52.0,38.0,40.0],"n":15,"mean":45.28333333333333,"sd":5.1705102830669984,"emm":45.28333333333333},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[31.0,41.16666666666665,47.625,43.0,24.5,37.75,39.25,44.0,44.58333333333335,40.375,30.25,33.75,36.375,38.0,38.625],"n":15,"mean":38.016666666666666,"sd":6.133493463230565,"emm":38.016666666666666},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[24.0,19.66666666666665,44.0,41.0,24.75,30.83333333333335,38.5,38.25,36.75,35.25,39.75,34.375,34.875,23.625,34.125],"n":15,"mean":33.31666666666667,"sd":7.231345733064568,"emm":33.31666666666667},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[48.0,62.5,53.25,47.5,46.125,50.0,46.0,53.91666666666665,48.08333333333335,53.125,47.75,43.125,53.5,52.375,44.5],"n":15,"mean":49.983333333333334,"sd":4.908609216921269,"emm":49.983333333333334}],"aov":[{"key":"t:Device","term":"Device","F":10.76091958,"df1":1.0,"df2":14.0,"thr":4.529756477,"p":0.002075195312,"sig":true},{"key":"t:Activation","term":"Activation","F":42.65994942,"df1":1.0,"df2":14.0,"thr":4.611535976,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":5.224865103,"df1":1.0,"df2":14.0,"thr":4.658961538,"p":0.04010009766,"sig":true}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":38.016666666666666,"mr":45.28333333333333,"diff":-7.266666666666666,"rel":-16.047110783952885,"t":-3.28038406,"df":14.0,"thr":2.128322456,"p":0.002075195312,"pOwn":0.002075195312,"g":-0.8006506928,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":49.983333333333334,"mr":33.31666666666667,"diff":16.666666666666664,"rel":50.02501250625312,"t":6.531458445,"df":14.0,"thr":2.147448713,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":1.594147707,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":31.022222222222222,"mr":35.611111111111114,"diff":-4.588888888888892,"rel":-12.886115444617792,"t":-2.46487637,"df":14.0,"thr":2.605409199,"p":0.06829833984,"pOwn":0.02294921875,"g":-0.6016079024,"sig":false,"inside":true},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":45.01111111111111,"mr":54.95555555555555,"diff":-9.944444444444436,"rel":-18.095430651031123,"t":-3.29783778,"df":14.0,"thr":2.694515076,"p":0.01391601562,"pOwn":0.004211425781,"g":-0.8049106613,"sig":true,"inside":true},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":54.95555555555555,"mr":35.611111111111114,"diff":19.344444444444434,"rel":54.321372854914166,"t":7.516312036,"df":14.0,"thr":2.795463294,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":1.834523132,"sig":true,"inside":true},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":45.01111111111111,"mr":31.022222222222222,"diff":13.98888888888889,"rel":45.093123209169065,"t":4.626124663,"df":14.0,"thr":2.684754256,"p":0.0009155273438,"pOwn":0.000244140625,"g":1.129108619,"sig":true,"inside":true}],"nPerm":[16384.0],"gComputed":false},"median_frequency|L":{"id":"median_frequency|L","outcome":"median_frequency","split":"L","name":"Median frequency","noun":"the median frequency","unit":"Hz","dec":1,"relative":true,"splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","n":15,"values":{"Echo|R":[45.75,46.0,55.75,40.25,31.5,38.0,43.0,30.5,41.25,40.75,44.75,47.75,41.0,49.25,45.0],"ACC|R":[36.5,37.3333333333333,31.5,34.25,37.75,37.0,42.25,36.5,33.75,32.0,30.25,32.5,32.5,47.5,36.0],"Echo|C":[59.3333333333333,60.0,67.0,66.0,66.0,60.5,53.0,58.6666666666667,62.0,62.0,66.5,64.0,67.0,56.6,54.0],"ACC|C":[49.0,47.3333333333333,38.5,46.0,43.0,43.75,47.5,39.5,44.0,41.25,41.75,45.75,53.5,46.0,43.0]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":42.7,"sd":6.434560702065948},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":35.83888888888888,"sd":4.465750024399404},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":61.50666666666667,"sd":4.638592424705977},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":44.65555555555555,"sd":3.858338047239054}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[52.54166666666665,53.0,61.375,53.125,48.75,49.25,48.0,44.58333333333335,51.625,51.375,55.625,55.875,54.0,52.925,49.5],"n":15,"mean":52.10333333333333,"sd":3.9570421453002647,"emm":52.10333333333334},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[42.75,42.3333333333333,35.0,40.125,40.375,40.375,44.875,38.0,38.875,36.625,36.0,39.125,43.0,46.75,39.5],"n":15,"mean":40.24722222222222,"sd":3.2665735328479344,"emm":40.24722222222222},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[41.125,41.66666666666665,43.625,37.25,34.625,37.5,42.625,33.5,37.5,36.375,37.5,40.125,36.75,48.375,40.5],"n":15,"mean":39.26944444444444,"sd":3.851080381635795,"emm":39.269444444444446},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[54.16666666666665,53.66666666666665,52.75,56.0,54.5,52.125,50.25,49.08333333333335,53.0,51.625,54.125,54.875,60.25,51.3,48.5],"n":15,"mean":53.08111111111111,"sd":2.9162371565836582,"emm":53.08111111111111}],"aov":[{"key":"t:Device","term":"Device","F":62.44062523,"df1":1.0,"df2":14.0,"thr":4.682199596,"p":6.103515625e-05,"sig":true},{"key":"t:Activation","term":"Activation","F":102.9981343,"df1":1.0,"df2":14.0,"thr":4.754362753,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":21.61917377,"df1":1.0,"df2":14.0,"thr":4.561340442,"p":6.103515625e-05,"sig":true}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":40.24722222222222,"mr":52.10333333333334,"diff":-11.856111111111119,"rel":-22.754995415093948,"t":-7.901938068,"df":14.0,"thr":2.163839087,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":-1.928643742,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":53.08111111111111,"mr":39.269444444444446,"diff":13.811666666666667,"rel":35.171535686496426,"t":10.14879965,"df":14.0,"thr":2.180450126,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":2.477040286,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":35.83888888888888,"mr":42.7,"diff":-6.861111111111121,"rel":-16.0681759042415,"t":-3.3380991,"df":14.0,"thr":2.608726212,"p":0.01257324219,"pOwn":0.004943847656,"g":-0.8147373319,"sig":true,"inside":true},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":44.65555555555555,"mr":61.50666666666667,"diff":-16.851111111111116,"rel":-27.39721078112581,"t":-10.47901882,"df":14.0,"thr":2.692464154,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":-2.557637621,"sig":true,"inside":true},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":61.50666666666667,"mr":42.7,"diff":18.806666666666665,"rel":44.04371584699453,"t":9.161639045,"df":14.0,"thr":2.68369679,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":2.236101784,"sig":true,"inside":true},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":44.65555555555555,"mr":35.83888888888888,"diff":8.81666666666667,"rel":24.600837079522567,"t":6.5743097,"df":14.0,"thr":2.641028731,"p":0.0003051757812,"pOwn":0.0001220703125,"g":1.604606509,"sig":true,"inside":true}],"nPerm":[16384.0],"gComputed":false},"median_frequency|V":{"id":"median_frequency|V","outcome":"median_frequency","split":"V","name":"Median frequency","noun":"the median frequency","unit":"Hz","dec":1,"relative":true,"splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","n":15,"values":{"Echo|R":[46.25,55.3333333333333,48.5,50.0,53.0,38.6666666666667,50.5,49.0,43.75,51.75,53.75,50.75,56.75,53.75,47.0],"ACC|R":[38.5,47.6666666666667,49.0,48.25,31.5,39.0,46.25,44.0,43.75,47.75,38.25,34.75,46.75,44.75,37.75],"Echo|C":[59.3333333333333,63.0,67.75,65.6666666666667,65.0,57.75,68.0,75.0,58.25,63.0,67.5,63.0,70.0,63.0,56.0],"ACC|C":[52.0,62.0,59.0,54.0,49.0,53.75,53.0,61.5,64.3333333333333,58.0,49.75,47.0,52.5,62.5,55.5]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":49.916666666666664,"sd":4.695911764672248},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":42.527777777777786,"sd":5.48045468897277},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":64.15,"sd":5.1036090560333305},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":55.58888888888888,"sd":5.372112242599731}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[52.79166666666665,59.16666666666665,58.125,57.83333333333335,59.0,48.20833333333335,59.25,62.0,51.0,57.375,60.625,56.875,63.375,58.375,51.5],"n":15,"mean":57.03333333333333,"sd":4.291036708272958,"emm":57.03333333333333},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[45.25,54.83333333333335,54.0,51.125,40.25,46.375,49.625,52.75,54.04166666666665,52.875,44.0,40.875,49.625,53.625,46.625],"n":15,"mean":49.05833333333333,"sd":4.886809058862212,"emm":49.05833333333334},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[42.375,51.5,48.75,49.125,42.25,38.83333333333335,48.375,46.5,43.75,49.75,46.0,42.75,51.75,49.25,42.375],"n":15,"mean":46.22222222222222,"sd":3.9437597214765407,"emm":46.22222222222223},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[55.66666666666665,62.5,63.375,59.83333333333335,57.0,55.75,60.5,68.25,61.29166666666665,60.5,58.625,55.0,61.25,62.75,55.75],"n":15,"mean":59.86944444444444,"sd":3.660230642977074,"emm":59.86944444444444}],"aov":[{"key":"t:Device","term":"Device","F":25.98104055,"df1":1.0,"df2":14.0,"thr":4.696478206,"p":0.0001831054688,"sig":true},{"key":"t:Activation","term":"Activation","F":278.4593097,"df1":1.0,"df2":14.0,"thr":4.703894496,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":0.416466661,"df1":1.0,"df2":14.0,"thr":4.753285471,"p":0.5229492188,"sig":false}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":49.05833333333334,"mr":57.03333333333333,"diff":-7.974999999999994,"rel":-13.983050847457617,"t":-5.097160047,"df":14.0,"thr":2.167135945,"p":0.0001831054688,"pOwn":0.0001831054688,"g":-1.244075282,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":59.86944444444444,"mr":46.22222222222223,"diff":13.647222222222211,"rel":29.52524038461536,"t":16.6871001,"df":14.0,"thr":2.168846351,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":4.072857937,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":42.527777777777786,"mr":49.916666666666664,"diff":-7.388888888888879,"rel":-14.802448525319958,"t":-4.417758388,"df":14.0,"thr":2.644646161,"p":0.001647949219,"pOwn":0.00048828125,"g":-1.078252195,"sig":true,"inside":false},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":55.58888888888888,"mr":64.15,"diff":-8.561111111111124,"rel":-13.34545769463932,"t":-4.421973542,"df":14.0,"thr":2.706167822,"p":0.004150390625,"pOwn":0.001342773438,"g":-1.079280997,"sig":true,"inside":false},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":64.15,"mr":49.916666666666664,"diff":14.233333333333341,"rel":28.514190317195343,"t":11.60990481,"df":14.0,"thr":2.73908297,"p":0.0001220703125,"pOwn":6.103515625e-05,"g":2.833655498,"sig":true,"inside":false},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":55.58888888888888,"mr":42.527777777777786,"diff":13.061111111111096,"rel":30.71195297191374,"t":10.72016265,"df":14.0,"thr":2.75091994,"p":0.0001220703125,"pOwn":6.103515625e-05,"g":2.616494134,"sig":true,"inside":false}],"nPerm":[16384.0],"gComputed":false},"damping|L":{"id":"damping|L","outcome":"damping","split":"L","name":"Damping","noun":"damping","unit":"s⁻¹","dec":1,"relative":true,"splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","n":15,"values":{"Echo|R":[22.45033833,28.4604757466667,43.597617445,27.192400065,20.732497165,19.64614216,28.0920129925,15.7419421275,27.0375614175,27.804667935,16.54553135,16.1577419025,27.92991343,33.6676838425,31.2873922475],"ACC|R":[13.52290458,19.2302815433333,17.6414310375,11.828631955,20.52566714,19.6735788975,17.095134075,12.7367135325,12.7552373475,12.4421488275,8.95594356525,12.3468093425,12.788351245,17.756259855,15.4461921125],"Echo|C":[36.2234155266667,39.01953327,40.817545995,45.47241924,44.29514977,39.4496821125,34.08057191,43.1262909666667,46.5108541075,37.0821577625,43.541253165,50.18666901,48.60452906,30.235946838,33.025500275],"ACC|C":[16.6177014166667,29.1626382866667,24.7440601725,28.8889710266667,29.1673238475,28.64604603,23.53703315,26.26025087,24.6145768033333,21.4055618325,22.2429571475,27.2451775675,36.34999971,30.898356925,30.6722290625]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":25.756261210444446,"sd":7.500705075929647},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":14.983019003738887,"sd":3.4520587752354994},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":40.778101267255565,"sd":5.889182248212788},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":26.696858923222226,"sd":4.7470051725851485}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[29.33687692833335,33.74000450833335,42.20758172,36.332409652500004,32.5138234675,29.547912136249998,31.086292451250003,29.43411654708335,36.7742077625,32.44341284875,30.043392257500003,33.17220545625,38.267221245,31.95181534025,32.15644626125],"n":15,"mean":33.26718123885,"sd":3.685787337166261,"emm":33.26718123885001},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[15.07030299833335,24.196459915,21.192745605,20.35880149083335,24.846495493749998,24.15981246375,20.3160836125,19.49848220125,18.68490707541665,16.92385533,15.599450356375,19.795993455,24.5691754775,24.32730839,23.0592105875],"n":15,"mean":20.839938963480556,"sd":3.312157447392846,"emm":20.839938963480556},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[17.986621455,23.845378645,30.619524241249998,19.51051601,20.6290821525,19.659860528750002,22.59357353375,14.23932783,19.8963993825,20.12340838125,12.750737457625,14.252275622500001,20.3591323375,25.711971848749997,23.36679218],"n":15,"mean":20.369640107091666,"sd":4.628586740869376,"emm":20.369640107091666},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[26.420558471666702,34.09108577833335,32.78080308375,37.18069513333335,36.73123680875,34.047864071250004,28.80880253,34.693270918333354,35.56271545541665,29.2438597975,32.89210515625,38.715923288750005,42.477264385,30.567151881500003,31.84886466875],"n":15,"mean":33.737480095238894,"sd":4.13800329180358,"emm":33.737480095238894}],"aov":[{"key":"t:Device","term":"Device","F":124.0018137,"df1":1.0,"df2":14.0,"thr":4.714170359,"p":6.103515625e-05,"sig":true},{"key":"t:Activation","term":"Activation","F":57.44169565,"df1":1.0,"df2":14.0,"thr":4.704436634,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":1.385476955,"df1":1.0,"df2":14.0,"thr":4.737663593,"p":0.2553100586,"sig":false}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":20.839938963480556,"mr":33.26718123885001,"diff":-12.427242275369451,"rel":-37.355861881248586,"t":-11.13561016,"df":14.0,"thr":2.171214029,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":-2.717893341,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":33.737480095238894,"mr":20.369640107091666,"diff":13.367839988147228,"rel":65.62629441593928,"t":7.579029994,"df":14.0,"thr":2.168971331,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":1.849830844,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":14.983019003738887,"mr":25.756261210444446,"diff":-10.773242206705559,"rel":-41.827663257029286,"t":-5.862224009,"df":14.0,"thr":2.660618034,"p":0.0003662109375,"pOwn":0.0001220703125,"g":-1.430806158,"sig":true,"inside":false},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":26.696858923222226,"mr":40.778101267255565,"diff":-14.081242344033338,"rel":-34.53138303754335,"t":-8.046138144,"df":14.0,"thr":2.705160497,"p":0.0003662109375,"pOwn":0.0001220703125,"g":-1.963838978,"sig":true,"inside":false},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":40.778101267255565,"mr":25.756261210444446,"diff":15.021840056811119,"rel":58.323061464835575,"t":5.151519923,"df":14.0,"thr":2.681695217,"p":0.00146484375,"pOwn":0.00048828125,"g":1.257343018,"sig":true,"inside":false},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":26.696858923222226,"mr":14.983019003738887,"diff":11.71383991948334,"rel":78.18077195630767,"t":9.069876342,"df":14.0,"thr":2.699512045,"p":0.000244140625,"pOwn":6.103515625e-05,"g":2.213705055,"sig":true,"inside":false}],"nPerm":[16384.0],"gComputed":false},"damping|V":{"id":"damping|V","outcome":"damping","split":"V","name":"Damping","noun":"damping","unit":"s⁻¹","dec":1,"relative":true,"splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","n":15,"values":{"Echo|R":[31.7013052725,37.6167438833333,33.224507595,38.39169386,35.679015335,22.6098690666667,35.422196,35.2810516775,33.48991015,33.13770441,36.81899104,31.625317285,38.16318012,37.982523935,36.229837105],"ACC|R":[20.1515909875,35.98797528,32.44350449,39.814824835,19.3443627925,28.3336139325,33.9986071825,32.9481845425,31.121864045,34.25187984,26.86133368,20.43629929,37.51851508,35.078635895,26.3929016],"Echo|C":[42.34380992,31.57397688,54.79041744,34.8469141433333,44.974467955,38.56944678,59.18641484,54.9052405566667,36.5593180525,32.138345965,31.839091285,26.034710375,38.130787585,43.704147216,40.7665377225],"ACC|C":[31.3385062933333,49.1684685233333,24.5196967575,31.7074694433333,30.8702885025,25.435897575,28.4143162,41.444379955,38.2531026466667,28.2430063325,31.3926782325,39.0144388575,22.529956865,43.9569891125,36.0095400325]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":34.491589782333335,"sd":3.9964315552616685},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":30.31227289816667,"sd":6.495439722933581},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":40.690908447733335,"sd":9.579718692366606},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":33.48658235527777,"sd":7.634591497130464}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[37.022557596249996,34.59536038166665,44.0074625175,36.61930400166665,40.326741645,30.58965792333335,47.30430542,45.09314611708335,35.024614101249995,32.6380251875,34.3290411625,28.83001383,38.1469838525,40.84333557550001,38.49818741375],"n":15,"mean":37.59124911503333,"sd":5.2696508601049175,"emm":37.591249115033335},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[25.74504864041665,42.57822190166665,28.48160062375,35.76114713916665,25.107325647499998,26.88475575375,31.20646169125,37.19628224875,34.68748334583335,31.24744308625,29.127005956250002,29.72536907375,30.0242359725,39.517812503749994,31.20122081625],"n":15,"mean":31.899427626722222,"sd":5.0778139033754295,"emm":31.89942762672222},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[25.92644813,36.80235958166665,32.8340060425,39.1032593475,27.51168906375,25.471741499583352,34.710401591250005,34.11461811,32.3058870975,33.694792125,31.84016236,26.0308082875,37.840847600000004,36.530579915000004,31.3113693525],"n":15,"mean":32.40193134025,"sd":4.448104332778717,"emm":32.40193134025},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[36.84115810666665,40.37122270166665,39.65505709875,33.2771917933333,37.92237822875,32.0026721775,43.80036552,48.17481025583335,37.40621034958335,30.19067614875,31.61588475875,32.52457461625,30.330372224999998,43.830568164249996,38.388038877499994],"n":15,"mean":37.088745401505555,"sd":5.46249265514363,"emm":37.08874540150555}],"aov":[{"key":"t:Device","term":"Device","F":10.23836029,"df1":1.0,"df2":14.0,"thr":4.712409486,"p":0.006713867188,"sig":true},{"key":"t:Activation","term":"Activation","F":8.319282858,"df1":1.0,"df2":14.0,"thr":4.691279487,"p":0.01440429688,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":0.5579013276,"df1":1.0,"df2":14.0,"thr":4.62099016,"p":0.4650268555,"sig":false}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":31.89942762672222,"mr":37.591249115033335,"diff":-5.691821488311117,"rel":-15.141347048334362,"t":-3.199743785,"df":14.0,"thr":2.170808487,"p":0.006713867188,"pOwn":0.006713867188,"g":-0.7809686401,"sig":true,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":37.08874540150555,"mr":32.40193134025,"diff":4.6868140612555464,"rel":14.464613272708036,"t":2.884316706,"df":14.0,"thr":2.165936169,"p":0.01440429688,"pOwn":0.01440429688,"g":0.7039816455,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":30.31227289816667,"mr":34.491589782333335,"diff":-4.179316884166667,"rel":-12.116915777269629,"t":-2.654515596,"df":14.0,"thr":2.810646785,"p":0.0693359375,"pOwn":0.02081298828,"g":-0.6478935734,"sig":false,"inside":false},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":33.48658235527777,"mr":40.690908447733335,"diff":-7.204326092455567,"rel":-17.705001847548775,"t":-2.075329193,"df":14.0,"thr":2.793430158,"p":0.1680297852,"pOwn":0.05590820312,"g":-0.5065302495,"sig":false,"inside":false},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":40.690908447733335,"mr":34.491589782333335,"diff":6.1993186654,"rel":17.973421070243923,"t":2.34975486,"df":14.0,"thr":2.799761018,"p":0.1135253906,"pOwn":0.03607177734,"g":0.5735099374,"sig":false,"inside":false},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":33.48658235527777,"mr":30.31227289816667,"diff":3.1743094571111,"rel":10.47202718111939,"t":1.243036866,"df":14.0,"thr":2.884889457,"p":0.5381469727,"pOwn":0.2295532227,"g":0.3033907951,"sig":false,"inside":false}],"nPerm":[16384.0],"gComputed":false},"emg":{"id":"emg","outcome":"emg","split":"","name":"Vastus lateralis activation","noun":"the activation","unit":"% of maximal","dec":1,"relative":false,"splitName":"","splitLong":"","n":15,"values":{"Echo|R":[0.30828934175,0.297343113666667,0.1162762285,0.380659429,2.2325459365,0.309067106,0.92119319125,0.2530168755,1.277123437,1.54373940875,0.18822409075,0.84094048525,0.05745681425,0.43641297775,0.35319634675],"ACC|R":[0.400359902,0.158117695666667,0.0340320355,0.2865355945,0.876849211,0.17666035225,0.3905599355,0.0935983665,0.786554606,2.7773174825,0.15343923675,1.00030540575,0.032177965,0.13851334825,0.20294916575],"Echo|C":[34.5229702033333,37.52253209,44.5985158475,35.0982404133333,39.9562804325,43.495703245,34.68108594,27.0896223633333,35.217739075,27.9226851625,48.08596556,44.47235741,33.593940995,49.29454696,30.9024332325],"ACC|C":[31.4890178433333,33.8588919233333,47.9988352925,37.5580929833333,43.297518525,43.5117486925,35.515896175,27.70615446,37.9060942266667,26.5370682125,45.6896204925,39.1832216925,32.62133242,48.66274791,32.990082995]},"cells":[{"code":"Echo|R","lv":{"Device":"Echo","Activation":"R"},"n":15,"mean":0.6343656521777777,"sd":0.6195198972227823},{"code":"ACC|R","lv":{"Device":"ACC","Activation":"R"},"n":15,"mean":0.5005313535277778,"sd":0.7015122168491831},{"code":"Echo|C","lv":{"Device":"Echo","Activation":"C"},"n":15,"mean":37.76364126199999,"sd":6.957979135088504},{"code":"ACC|C","lv":{"Device":"ACC","Activation":"C"},"n":15,"mean":37.635088256277776,"sd":7.009966250774203}],"levels":[{"key":"lv:Device=Echo","factor":"Device","level":"Echo","values":[17.41562977254165,18.909937601833334,22.357396038,17.73944992116665,21.094413184500002,21.9023851755,17.801139565625,13.67131961941665,18.247431256,14.733212285625,24.137094825374998,22.656648947625,16.825698904625,24.865479968875,15.627814789625],"n":15,"mean":19.199003457088885,"sd":3.4482256514047678,"emm":19.199003457088885},{"key":"lv:Device=ACC","factor":"Device","level":"ACC","values":[15.944688872666651,17.008504809499986,24.016433663999997,18.922314288916652,22.087183868,21.844204522375,17.95322805525,13.89987641325,19.346324416333353,14.6571928475,22.921529864625,20.091763549124998,16.326755192500002,24.400630629125,16.596516080375],"n":15,"mean":19.067809804902776,"sd":3.3887406715878976,"emm":19.067809804902776},{"key":"lv:Activation=R","factor":"Activation","level":"R","values":[0.354324621875,0.227730404666667,0.075154132,0.33359751174999996,1.5546975737500002,0.24286372912499998,0.655876563375,0.17330762100000002,1.0318390215,2.1605284456250002,0.17083166375,0.9206229455,0.044817389625,0.28746316299999997,0.27807275625],"n":15,"mean":0.5674485028527779,"sd":0.6078019839723288,"emm":0.5674485028527778},{"key":"lv:Activation=C","factor":"Activation","level":"C","values":[33.0059940233333,35.69071200666665,46.29867557,36.328166698333305,41.626899478750005,43.503725968750004,35.0984910575,27.39788841166665,36.56191665083335,27.2298766875,46.887793026249994,41.82778955125,33.1076367075,48.978647435,31.94625811375],"n":15,"mean":37.69936475913889,"sd":6.853942225791992,"emm":37.69936475913889}],"aov":[{"key":"t:Device","term":"Device","F":0.1688228742,"df1":1.0,"df2":14.0,"thr":4.602087825,"p":0.6868286133,"sig":false},{"key":"t:Activation","term":"Activation","F":418.0354854,"df1":1.0,"df2":14.0,"thr":4.662497278,"p":6.103515625e-05,"sig":true},{"key":"t:Device:Activation","term":"Device:Activation","F":4.737412589e-05,"df1":1.0,"df2":14.0,"thr":4.714547821,"p":0.9942626953,"sig":false}],"comps":[{"key":"m:Device:ACC~Echo","term":"Device","factor":"Device","at":{},"test":"ACC","ref":"Echo","mt":19.067809804902776,"mr":19.199003457088885,"diff":-0.13119365218610923,"rel":null,"t":-0.4108806082,"df":14.0,"thr":2.14524773,"p":0.6868286133,"pOwn":0.6868286133,"g":-0.1002845513,"sig":false,"inside":null},{"key":"m:Activation:C~R","term":"Activation","factor":"Activation","at":{},"test":"C","ref":"R","mt":37.69936475913889,"mr":0.5674485028527778,"diff":37.13191625628611,"rel":null,"t":20.44591611,"df":14.0,"thr":2.159281658,"p":6.103515625e-05,"pOwn":6.103515625e-05,"g":4.990280588,"sig":true,"inside":null},{"key":"x:Device@Activation=R:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"R"},"test":"ACC","ref":"Echo","mt":0.5005313535277778,"mr":0.6343656521777777,"diff":-0.13383429864999996,"rel":null,"t":-0.989952854,"df":14.0,"thr":2.327900356,"p":0.7554931641,"pOwn":0.3739013672,"g":-0.2416200128,"sig":false,"inside":false},{"key":"x:Device@Activation=C:ACC~Echo","term":"Device:Activation","factor":"Device","at":{"Activation":"C"},"test":"ACC","ref":"Echo","mt":37.635088256277776,"mr":37.76364126199999,"diff":-0.1285530057222175,"rel":null,"t":-0.1855489305,"df":14.0,"thr":2.760689139,"p":0.9961547852,"pOwn":0.8533935547,"g":-0.04528734349,"sig":false,"inside":false},{"key":"x:Activation@Device=Echo:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"Echo"},"test":"C","ref":"R","mt":37.76364126199999,"mr":0.6343656521777777,"diff":37.129275609822216,"rel":null,"t":20.32972912,"df":14.0,"thr":2.84121718,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":4.961922569,"sig":true,"inside":false},{"key":"x:Activation@Device=ACC:C~R","term":"Device:Activation","factor":"Activation","at":{"Device":"ACC"},"test":"C","ref":"R","mt":37.635088256277776,"mr":0.5005313535277778,"diff":37.13455690275,"rel":null,"t":19.6943287,"df":14.0,"thr":2.842731089,"p":0.0001831054688,"pOwn":6.103515625e-05,"g":4.806838965,"sig":true,"inside":false}],"nPerm":[16384.0],"gComputed":false},"c:peak_acceleration|L":{"id":"c:peak_acceleration|L","kind":"corr","outcome":"peak_acceleration","name":"Peak acceleration","noun":"the peak acceleration","split":"L","splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":-0.2176210281,"p":1.0,"pRaw":0.4359027949,"slope":-1.898033954,"intercept":-7.171447321,"n":15,"sig":false,"strength":"","y":[-23.55361598133004,-33.46119319643809,-52.08252124432953,-66.84845880532265,1.159512470870232,73.40127731700117,-49.46947158546633,9.705290313346598,-24.41594015333124,-69.43295602197328,-37.87779771099805,-70.56470029352516,-48.8826844189556,6.915050332968908,-18.256797638287193]},{"key":"r:Activation=C","level":"C","r":0.4832220313,"p":0.544331566,"pRaw":0.06804144575,"slope":5.883487631,"intercept":-80.89602016,"n":15,"sig":false,"strength":"","y":[-67.2936344981814,-10.602883232728061,-2.144964470764898,-75.30609896353144,141.32921969098058,-34.64697850986222,-21.283048094407413,-54.62399124189622,-65.22154548995037,-45.731916940560005,-35.21375496433419,-37.68911088569499,-24.33657197046215,36.03547827668161,1.113569245111465]}],"n":15},"c:peak_acceleration|V":{"id":"c:peak_acceleration|V","kind":"corr","outcome":"peak_acceleration","name":"Peak acceleration","noun":"the peak acceleration","split":"V","splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":0.06059970034,"p":1.0,"pRaw":0.8301289739,"slope":2.199742932,"intercept":164.338457,"n":15,"sig":false,"strength":"","y":[38.65600491701008,614.524579993686,125.42907094952142,55.714302832778685,342.2621345679579,137.6135542652218,349.7352787831699,222.55473258844395,40.82958070097936,260.9847833270316,211.16423982684088,44.044343439662576,95.96620807376367,217.2856238855265,51.47231348755266]},{"key":"r:Activation=C","level":"C","r":0.2816056668,"p":0.9277378677,"pRaw":0.3092459559,"slope":11.62375851,"intercept":36.85767189,"n":15,"sig":false,"strength":"","y":[-53.201661888214765,174.66534764307937,-45.14344800424786,313.4935923065466,214.22281990994045,-2.1349278102778295,46.479112897051074,76.61313670767655,143.8777554505142,201.58892973555186,561.1015126868177,128.43837668611806,496.6942762867287,51.813216591057504,57.6633671100521]}],"n":15},"c:main_frequency|L":{"id":"c:main_frequency|L","kind":"corr","outcome":"main_frequency","name":"Main frequency","noun":"the main frequency","split":"L","splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":0.3035285729,"p":1.0,"pRaw":0.2714269039,"slope":1.845848053,"intercept":-49.54876156,"n":15,"sig":false,"strength":"","y":[-20.833333333333332,-40.506329113923854,-54.31472081218274,-41.1764705882353,44.04761904761905,-2.0833333333333335,-57.961783439490446,-2.5316455696202533,-48.611111111111114,-36.0,-26.760563380281692,-54.3859649122807,-42.857142857142854,-40.869565217391305,-30.434782608695652]},{"key":"r:Activation=C","level":"C","r":-0.09779628599,"p":1.0,"pRaw":0.7287890809,"slope":-0.3335440857,"intercept":-44.80820758,"n":15,"sig":false,"strength":"","y":[-59.6774193548386,-58.62068965517241,-70.95435684647303,-47.20812182741114,-51.96078431372549,-38.57142857142857,-6.818181818181818,-38.34355828220855,-52.46913580246907,-55.55555555555556,-59.91379310344828,-52.8,-39.53488372093023,-54.42238267148014,-37.30569948186528]}],"n":15},"c:main_frequency|V":{"id":"c:main_frequency|V","kind":"corr","outcome":"main_frequency","name":"Main frequency","noun":"the main frequency","split":"V","splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":-0.5175801323,"p":0.1925784296,"pRaw":0.04814460739,"slope":-2.083590251,"intercept":9.791543538,"n":15,"sig":false,"strength":"","y":[-8.0,7.017543859648948,14.634146341463415,0.0,-42.857142857142854,-11.224489795918457,10.95890410958904,-13.414634146341463,4.166666666666667,-19.23076923076923,-42.57425742574257,-19.07894736842105,-29.878048780487806,-18.26923076923077,-10.416666666666666]},{"key":"r:Activation=C","level":"C","r":-0.7666422408,"p":0.005131325214,"pRaw":0.0008552208691,"slope":-3.440626227,"intercept":19.11770872,"n":15,"sig":true,"strength":"strong","y":[-31.57894736842105,-1.5873015873015872,-17.167381974248926,-10.0,-49.38775510204081,-13.08411214953271,-29.62962962962963,-5.120481927710786,16.10486891385775,-13.596491228070175,-50.78125,-25.757575757575758,-30.158730158730158,9.5,2.272727272727273]}],"n":15},"c:median_frequency|L":{"id":"c:median_frequency|L","kind":"corr","outcome":"median_frequency","name":"Median frequency","noun":"the median frequency","split":"L","splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":-0.01359272256,"p":1.0,"pRaw":0.9616533477,"slope":-0.05498771664,"intercept":-13.46844362,"n":15,"sig":false,"strength":"","y":[-20.218579234972676,-18.840579710144997,-43.497757847533634,-14.906832298136646,19.841269841269842,-2.6315789473684212,-1.744186046511628,19.672131147540984,-18.181818181818183,-21.47239263803681,-32.402234636871505,-31.93717277486911,-20.73170731707317,-3.553299492385787,-20.0]},{"key":"r:Activation=C","level":"C","r":-0.151916173,"p":1.0,"pRaw":0.588866554,"slope":-0.3012965751,"intercept":-23.82855848,"n":15,"sig":false,"strength":"","y":[-17.415730337078607,-21.111111111111164,-42.53731343283582,-30.303030303030305,-34.84848484848485,-27.68595041322314,-10.377358490566039,-32.67045454545458,-29.032258064516128,-33.46774193548387,-37.21804511278196,-28.515625,-20.149253731343283,-18.727915194346295,-20.37037037037037]}],"n":15},"c:median_frequency|V":{"id":"c:median_frequency|V","kind":"corr","outcome":"median_frequency","name":"Median frequency","noun":"the median frequency","split":"V","splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":-0.8261462564,"p":0.001178073953,"pRaw":0.0001472592441,"slope":-2.321592064,"intercept":9.908217693,"n":15,"sig":true,"strength":"very strong","y":[-16.756756756756758,-13.855421686746876,1.0309278350515463,-3.5,-40.56603773584906,0.8620689655171548,-8.415841584158416,-10.204081632653061,0.0,-7.729468599033816,-28.837209302325583,-31.527093596059114,-17.621145374449338,-16.74418604651163,-19.680851063829788]},{"key":"r:Activation=C","level":"C","r":-0.6755524026,"p":0.02854359264,"pRaw":0.005708718528,"slope":-1.733650807,"intercept":5.223185677,"n":15,"sig":true,"strength":"strong","y":[-12.359550561797704,-1.5873015873015872,-12.915129151291513,-17.766497461928974,-24.615384615384617,-6.926406926406926,-22.058823529411764,-18.0,10.443490701001375,-7.936507936507937,-26.296296296296298,-25.396825396825395,-25.0,-0.7936507936507936,-0.8928571428571429]}],"n":15},"c:damping|L":{"id":"c:damping|L","kind":"corr","outcome":"damping","name":"Damping","noun":"damping","split":"L","splitName":"Lateral","splitLong":"Lateral (mediolateral) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":0.2380302543,"p":1.0,"pRaw":0.3929455233,"slope":1.056427234,"intercept":-49.45110119,"n":15,"sig":false,"strength":"","y":[-39.76525261568296,-32.431623018158575,-59.53579101024199,-56.50022827435185,-0.9976127012290954,0.13965458091748034,-39.145927066301525,-19.090583427759462,-52.82400971544645,-55.25158273212803,-45.87092202844245,-23.585799197661117,-54.21270718560906,-47.26022752837664,-50.63125750362203]},{"key":"r:Activation=C","level":"C","r":-0.1908325106,"p":1.0,"pRaw":0.4956975276,"slope":-0.6672282688,"intercept":-26.45722,"n":15,"sig":false,"strength":"","y":[-54.12442152388087,-25.2614374321892,-39.37886374763673,-36.46924551299352,-34.152330449384095,-27.385863469548127,-30.937094564737315,-39.10848746464854,-47.0777794223217,-42.27530671328205,-48.91521136699925,-45.71232140935428,-25.21273137915267,2.190803187176848,-7.125618667104347]}],"n":15},"c:damping|V":{"id":"c:damping|V","kind":"corr","outcome":"damping","name":"Damping","noun":"damping","split":"V","splitName":"Vertical","splitLong":"Vertical (anteroposterior) axis","by":"Activation","x":"fat_thickness","yNoun":"the relative difference between accelerometry and ultrasonography","yLabel":"Relative difference","yFormula":"100 × (accelerometry − ultrasonography) / ultrasonography","yNeg":"negative when accelerometry gives the lower value","yUnit":"%","yDec":1,"entries":[{"key":"r:Activation=R","level":"R","r":-0.7920855125,"p":0.003020761456,"pRaw":0.0004315373509,"slope":-3.412089323,"intercept":23.94410729,"n":15,"sig":true,"strength":"strong","y":[-36.43292976651991,-4.329903216463536,-2.3506837618792296,3.706872065060811,-45.78224031445234,25.315249942210894,-4.0189174536214445,-6.612238082709292,-7.070924031726617,3.362258942909085,-27.044894709857857,-35.37993909805607,-1.6892330198188934,-7.645326690162737,-27.151475940923923]},{"key":"r:Activation=C","level":"C","r":0.05550251304,"p":1.0,"pRaw":0.8442488402,"slope":0.4066548291,"intercept":-16.72801859,"n":15,"sig":false,"strength":"","y":[-25.990348170037077,55.72466119869188,-55.24820232597958,-9.009247381523512,-31.36041423905712,-34.05169195169877,-51.9918273867186,-24.516531509909306,4.632976445934763,-12.120535502176086,-1.4020910600244185,49.85547484700989,-40.914000753913356,0.5785306718155787,-11.6688783393408]}],"n":15}},"methods":[{"h":"About this document","p":["This document gives every result of the variables extracted from the vibration signals, their correlations with the subcutaneous fat thickness and the muscle activation check, with each participant's values, from <span class=\"cite\" data-cite=\"trama2021\" tabindex=\"0\">Trama et al. (2021)<\/span>. The methods are the article's. The statistics differ slightly: each participant's mean values were compared with a permutation analysis of variance (see Statistics), where the article fitted linear mixed models to every trial, and the correlations include the peak acceleration. The power-map analysis (statistical parametric mapping) is reported in the article only."]},{"h":"Participants","p":["A group of 15 participants composed of <span class=\"ref\" data-row=\"participants\" data-k=\"pc:sex=M\">12<\/span> men and <span class=\"ref\" data-row=\"participants\" data-k=\"pc:sex=F\">3<\/span> women (<span class=\"ref\" data-row=\"participants\" data-k=\"pv:age\">25.1 ± 4.4<\/span> years, <span class=\"ref\" data-row=\"participants\" data-k=\"pv:height\">176 ± 6<\/span> cm, <span class=\"ref\" data-row=\"participants\" data-k=\"pv:mass\">70.7 ± 9.8<\/span> kg) volunteered to participate in this study. All the participants were healthy and free from lower-limb injury. The study was approved by the local university ethics committee, according to the statement of ethical principles of the Declaration of Helsinki, and the participants signed an informed consent document."]},{"h":"Instrumentation","p":["An electromyogram (EMG) of the vastus lateralis of the right leg was recorded at 1000 Hz with pairs of surface electrodes (Delsys, Natick, Massachusetts, USA). An Aixplorer ultrasound device was used with an SL15-4 probe (Supersonic Imagine, Aix-en-Provence, France) to obtain video of the vastus lateralis vibrations (1000 Hz). The soft tissue acceleration of the thigh as well as the probe acceleration (±50 g, 1000 Hz) were recorded with two biaxial accelerometers (Mega Electronics, Kuopio, Finland)."]},{"h":"Procedure and data collection","p":["Participants were seated on a custom-built isometric knee-extensor ergometer, with the hip and knee angles set at 90° and the chest secured with a safety belt. After having shaved and cleaned the skin with alcohol, surface electromyographic electrodes were placed on the vastus lateralis belly, according to SENIAM recommendations. Before the experiment, participants performed a standardized warm-up consisting of ten incremental isometric knee extensions of 5 seconds. After a 3-minute rest period, participants performed two maximum voluntary isometric contractions to determine the maximal EMG signal and normalize the vastus lateralis activation level.","Testing consisted of an assessment of vastus lateralis accelerations induced by an external shock, using a pendulum impactor (a reflex hammer dropped from an angle of 45° with respect to the vertical). The position of the impactor was adjusted so that the impact was administered 6 cm distally from the location of the muscle-vibration measurement device. Shocks were administered under a relaxed condition (4 shocks) and a contracted condition (4 shocks at 40% of the maximal activation). Visual feedback of the 0.05-second normalized root-mean-square EMG of the vastus lateralis was displayed on a computer screen to help the participant achieve the 40% ± 10% target activation level. The impact was administered when the activation level was reached.","For each condition, two-dimensional vastus lateralis vibrations were measured with both an ultrasound device and an accelerometer. The ultrasound probe was positioned perpendicularly to the longitudinal axis of the thigh and proximally to the EMG electrodes, so that the muscle vibrations were analysed along the mediolateral and anteroposterior axes of the thigh. The participant being seated, this document calls them the <b>lateral<\/b> (mediolateral) and <b>vertical<\/b> (anteroposterior) axes. The position of the probe was marked on the skin, and the probe was clamped with a mechanical arm. A water-based gel was applied between the skin and the probe to avoid probe-skin contact. The position of the probe was adjusted between the relaxed and contracted conditions to keep the probe out of contact with the skin when the muscle expanded, and therefore avoid any pressure from the probe on the skin. Once all the shocks were administered, the probe was replaced by the accelerometer, which was placed at the same location and oriented in the same direction as the probe. Thereafter, the same procedure was performed. Finally, the subcutaneous thigh fat thickness was measured with a skin caliper (the average of three measurements) at the location of the ultrasound probe and the accelerometer (<span class=\"ref\" data-row=\"participants\" data-k=\"pv:fat_thickness\">10.4 ± 4.4<\/span> mm, from <span class=\"ref\" data-row=\"participants\" data-k=\"pv:fat_thickness\">4.3–19.0<\/span> mm)."]},{"h":"Data treatment","p":["The data were processed with MATLAB R2018b (MathWorks, Natick, Massachusetts, USA). Raw EMG signals of the vastus lateralis were run through a Butterworth band-pass filter between 10 Hz and 499 Hz. Thereafter, the root-mean-square envelope of the signal was calculated with a window length of 0.05 seconds. The signals were normalized for each participant with the mean value of the greatest 0.5-second plateau obtained during the two maximal contractions. The mean EMG was calculated from 0.5 seconds to 0.05 seconds before the impact, to avoid the noise caused by the shock.","Vastus lateralis accelerations were first computed from the ultrasonographic images (bandwidth 7.5 MHz, acquisition frequency 1000 Hz, resolution 256 × 180 pixels, field of view 5 × 2.5 cm). The upper zone of the muscle, just below the subcutaneous fat, was manually selected, and the binary robust invariant scalable keypoints (BRISK) algorithm detected a maximum of 300 points within it. The point trajectories were tracked over time to obtain the mediolateral and anteroposterior displacements of each point. A Butterworth band-pass filter between 10 Hz and 130 Hz was applied to the displacements, which were then derived twice to obtain the point accelerations in the two directions. Points with a maximum acceleration above 5 m·s⁻² were included, and the mean acceleration of these points was analysed. The acceleration signals of the accelerometers (skin and probe) were filtered with a Butterworth band-pass filter between 10 Hz and 130 Hz.","The acceleration signals were investigated in the time-frequency domain with a continuous wavelet transform, using a Morse mother wavelet with γ = 3 and P² = 60. The modulus of the coefficients was expressed as power as a function of time and frequency, <i>p<\/i>(<i>t<\/i>, <i>f<\/i>), between 10 Hz and 130 Hz during the 0.25 seconds after the impact. The <b>main frequency<\/b> was the frequency with the most energy in the energy spectrum <i>E<\/i>(<i>f<\/i>), the integral of the power over time, and the <b>median frequency<\/b> the frequency that split that spectrum into two equal parts. The <b>damping<\/b> coefficient <i>D<\/i> was obtained by fitting the theoretical power decay <i>P<\/i><sub>T1<\/sub>·e<sup>−<i>D<\/i>·<i>t<\/i><\/sup> to the overall power <i>P<\/i>(<i>t<\/i>), the integral of the power over frequency, from the instant of maximal power decay (T1) to the instant when the power reached 10% of its value at T1. The <b>peak acceleration<\/b> was the largest acceleration of the filtered signal after the impact.","Trials for which the peak acceleration of the ultrasound probe was above 5 m·s⁻² on at least one axis were excluded. Each variable is each participant's mean over their retained trials (up to four per condition)."]},{"h":"Statistics","p":["Each variable was compared, separately on each axis, with a two-way repeated-measures analysis of variance: device (accelerometry, ultrasonography) × activation level (relaxed, contracted). The mean EMG does not depend on the axis and was analysed once. The p-values came from permutations: the residuals of the model without the tested effect were sign-flipped participant by participant (<span class=\"cite\" data-cite=\"freedman1983\" tabindex=\"0\">Freedman & Lane, 1983<\/span>; <span class=\"cite\" data-cite=\"winkler2014\" tabindex=\"0\">Winkler et al., 2014<\/span>). With 15 participants there are 16,384 distinct sign patterns, and every one of them was used, so each p-value is exact; the smallest possible is 1/16,384 = 0.000061.","When the interaction was significant, the two devices were compared within each activation level, and the two activation levels within each device, with paired t statistics on the same sign flips. These four comparisons were corrected together (single-step minimum p). Without a significant interaction, the same comparisons are shown pale: they are outside the interaction and mostly reflect the main effects. Effect sizes are Hedges' g. A result was significant when p ≤ 0.05.","For each vibration variable, axis and activation level, the relative difference between the devices, 100 × (accelerometry − ultrasonography) / ultrasonography, was computed for each participant and correlated with the subcutaneous fat thickness (Pearson's r, with the least-squares slope). The 8 p-values of each axis (t test of r) were corrected together with the Holm–Bonferroni method, the axes being analysed separately as in the analyses of variance. A significant correlation was called strong when |r| was between 0.6 and 0.79, and very strong when |r| ≥ 0.8.","The article analysed the same variables with linear mixed models on every trial (likelihood-ratio tests, Holm–Bonferroni correction, Tukey post hoc tests), and tested 12 correlations (the peak acceleration aside), whose figure gives uncorrected p-values. Its p-values and effect sizes can therefore differ slightly from these."]},{"h":"How to read this document","p":["Every statistic in a text, a table or a figure is linked. Linked statistics in the texts have a dotted underline. <b>Hover<\/b> one, or a table row or cell, and the same result is marked everywhere: in the text, in the table and in the figure beside it, which shows that row. <b>Click<\/b> it to keep it shown while you move to the figure; click it again, press <b>Esc<\/b> or click anywhere else to release it. Hovering a panel or a violin of the figure marks its statistics in the same way.","<b>Bold means significant<\/b> (p ≤ 0.05), and only that, in the tables and the figures.","Each figure shows every participant as a cross, at their own value, spread sideways only to avoid overlap. A grey line joins each participant's values across the levels of a within-participant factor. Hover a cross to see the participant and follow them across the panels. Each violin is the distribution of its group (a kernel density), its outline bold over the mean ± SD, the black line its mean, with the mean and (SD) written on it. The ⤢ button enlarges the figure.","The first row of the figure shows the main effects: each participant's mean over the other factor's levels. The next rows read the Device × Activation interaction one factor at a time: devices within each activation level, then activation levels within each device. Their comparisons are drawn solid where the interaction is significant (inside the interaction). Where it is not, they are drawn pale and greyed in the tables: outside the interaction, they mostly reflect the main effects and are not interaction effects.","Differences are accelerometry − ultrasonography for device and contracted − relaxed for activation level, computed from the group means. Relative differences divide them by the mean of the second level (the reference). Effect sizes are Hedges' g, signed like the difference.","The correlations relate each participant's difference to their characteristic: one scatter plot per test, every participant as a cross, the least-squares line (solid when the correlation is significant, dashed otherwise), with r, the slope and p. Their p-values are corrected together, as the methods say.","The participants' characteristics are in the methods (Participants), with a figure. Hovering a participant anywhere in the document shows their characteristics.","Citations (author, year) have a dotted underline: hover one to read its reference, with its link; click it to keep it open. Its entry in the references is marked at the same time.","Each participant's values are under <b>Values per participant<\/b>, below each table, and can be downloaded as a CSV file."]},{"h":"References","p":["<span class=\"refentry\" data-ref=\"freedman1983\">Freedman D, Lane D (1983). A nonstochastic interpretation of reported significance levels. <i>Journal of Business &amp; Economic Statistics<\/i>, 1, 292–298. <a href=\"https://doi.org/10.1080/07350015.1983.10509354\" target=\"_blank\" rel=\"noopener noreferrer\">doi:10.1080/07350015.1983.10509354<\/a><\/span>","<span class=\"refentry\" data-ref=\"trama2021\">Trama R, Hautier CA, Souron R, Lapole T, Fouré A, Blache Y (2021). Is accelerometry an effective method to assess muscle vibrations in comparison to ultrafast ultrasonography? <i>IEEE Transactions on Biomedical Engineering<\/i>. <a href=\"https://doi.org/10.1109/TBME.2020.3035838\" target=\"_blank\" rel=\"noopener noreferrer\">doi:10.1109/TBME.2020.3035838<\/a><\/span>","<span class=\"refentry\" data-ref=\"winkler2014\">Winkler AM, Ridgway GR, Webster MA, Smith SM, Nichols TE (2014). Permutation inference for the general linear model. <i>NeuroImage<\/i>, 92, 381–397. <a href=\"https://doi.org/10.1016/j.neuroimage.2014.01.060\" target=\"_blank\" rel=\"noopener noreferrer\">doi:10.1016/j.neuroimage.2014.01.060<\/a><\/span>"]}],"people_info":{"section":"Participants","vars":[{"id":"age","key":"pv:age","name":"Age","noun":"the age","unit":"years","dec":1,"vdec":0,"values":[25.0,22.0,22.0,28.0,23.0,22.0,34.0,21.0,21.0,29.0,23.0,26.0,22.0,24.0,34.0],"n":15,"mean":25.066666666666666,"sd":4.350150517374028,"min":21.0,"max":34.0},{"id":"height","key":"pv:height","name":"Height","noun":"the height","unit":"cm","dec":0,"vdec":0,"values":[175.0,178.0,178.0,182.0,171.0,179.0,177.0,180.0,175.0,175.0,162.0,167.0,181.0,176.0,188.0],"n":15,"mean":176.26666666666668,"sd":6.227435457790983,"min":162.0,"max":188.0},{"id":"mass","key":"pv:mass","name":"Body mass","noun":"the body mass","unit":"kg","dec":1,"vdec":0,"values":[70.0,72.0,93.0,70.0,62.0,72.0,66.0,72.0,62.0,66.0,55.0,60.0,78.0,80.0,83.0],"n":15,"mean":70.73333333333333,"sd":9.82319897463337,"min":55.0,"max":93.0},{"id":"fat_thickness","key":"pv:fat_thickness","name":"Fat thickness","noun":"the fat thickness","unit":"mm","dec":1,"vdec":1,"values":[12.0,8.0,10.0,10.33333333,19.0,5.333333333,12.0,7.333333333,4.333333333,6.0,18.0,15.66666667,8.0,9.0,11.0],"n":15,"mean":10.399999999933334,"sd":4.390104312682302,"min":4.333333333,"max":19.0},{"id":"max_force","key":"pv:max_force","name":"Maximal force","noun":"the maximal force","unit":"N","dec":0,"vdec":0,"values":[627.0,679.0,951.5,631.0,373.5,458.0,454.0,655.5,389.0,324.0,397.5,335.0,687.0,773.0,554.5],"n":15,"mean":552.6333333333333,"sd":182.28475238587828,"min":324.0,"max":951.5}],"cats":[{"id":"sex","key":"pc:sex","name":"Sex","values":["M","M","M","M","F","M","M","M","M","M","F","F","M","M","M"],"levels":[{"code":"M","name":"man","plural":"men","count":12},{"code":"F","name":"woman","plural":"women","count":3}]}]},"corr":{"x":"fat_thickness","by":"Activation","family":"8","method":["pearson"],"correction":["holm"],"within":"axis","strength":[[0.8,"very strong"],[0.6,"strong"]]},"refs":{"freedman1983":{"label":["Freedman & Lane","1983"],"html":"Freedman D, Lane D (1983). A nonstochastic interpretation of reported significance levels. <i>Journal of Business &amp; Economic Statistics<\/i>, 1, 292–298. <a href=\"https://doi.org/10.1080/07350015.1983.10509354\" target=\"_blank\" rel=\"noopener noreferrer\">doi:10.1080/07350015.1983.10509354<\/a>"},"trama2021":{"label":["Trama et al.","2021"],"html":"Trama R, Hautier CA, Souron R, Lapole T, Fouré A, Blache Y (2021). Is accelerometry an effective method to assess muscle vibrations in comparison to ultrafast ultrasonography? <i>IEEE Transactions on Biomedical Engineering<\/i>. <a href=\"https://doi.org/10.1109/TBME.2020.3035838\" target=\"_blank\" rel=\"noopener noreferrer\">doi:10.1109/TBME.2020.3035838<\/a>"},"winkler2014":{"label":["Winkler et al.","2014"],"html":"Winkler AM, Ridgway GR, Webster MA, Smith SM, Nichols TE (2014). Permutation inference for the general linear model. <i>NeuroImage<\/i>, 92, 381–397. <a href=\"https://doi.org/10.1016/j.neuroimage.2014.01.060\" target=\"_blank\" rel=\"noopener noreferrer\">doi:10.1016/j.neuroimage.2014.01.060<\/a>"}}};
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const S = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+const html = (tag, cls, h) => { const e = $(tag, cls); e.innerHTML = h; return e; };
+const MINUS = '−', TIMES = '×';
+const ALPHA = DATA.alpha;
+
+// ------------------------------------------------------------------ numbers (the texts are written the same way)
+const isNum = v => v !== null && v !== undefined && isFinite(v);
+function fx(v, d) {
+  if (!isNum(v)) return '–';
+  let s = v.toFixed(d);
+  if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
+  return s.replace('-', MINUS);
+}
+const sgn = (v, d) => { const s = fx(v, d); return !isNum(v) || s.startsWith(MINUS) || +s === 0 ? s : '+' + s; };
+const pfmt = p => !isNum(p) ? '–' : p < 0.001 ? '<0.001' : p.toFixed(3);
+const plab = p => p < 0.001 ? 'p < 0.001' : 'p = ' + p.toFixed(3);
+const withUnit = (s, u) => !u ? s : u.startsWith('%') ? s + u : s + ' ' + u;
+
+// ------------------------------------------------------------------ factors, levels and their colours
+const FAC = {}; DATA.factors.forEach(f => { FAC[f.id] = f; f.lv = {}; f.levels.forEach(L => { f.lv[L.code] = L; }); });
+const FIDS = DATA.factors.map(f => f.id);
+const cvar = (fid, code) => '--c-' + (fid + '-' + code).replace(/[^A-Za-z0-9_-]/g, '_');
+(() => {
+  const light = [], dark = [];
+  DATA.factors.forEach(f => f.levels.forEach(L => { light.push(cvar(f.id, L.code) + ':' + L.color); dark.push(cvar(f.id, L.code) + ':' + L.color_dark); }));
+  const st = document.createElement('style');
+  st.textContent = `:root{${light.join(';')}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${dark.join(';')}}}:root[data-theme="dark"]{${dark.join(';')}}`;
+  document.head.append(st);
+})();
+const col = (fid, code) => `var(${cvar(fid, code)})`;
+const DESIGN = (DATA.factors.length === 2 ? 'two-way ' : 'one-way ') +
+  (DATA.factors.every(f => f.within) ? 'repeated-measures ' : DATA.factors.some(f => f.within) ? 'mixed ' : '') + 'analysis of variance';
+const termName = t => t.split(':').map(x => FAC[x].name).join(' ' + TIMES + ' ');
+const cellName = (lv, sep) => FIDS.map(f => FAC[f].lv[lv[f]].name).join(sep || ' · ');
+const cellShort = lv => FIDS.map(f => FAC[f].lv[lv[f]].short).join(' · ');
+const ROWS = DATA.rows;
+const rowLabel = (R, multi) => multi ? R.name + (R.splitName ? ' · ' + R.splitName : '') : (R.splitName || R.name);
+
+// ------------------------------------------------------------------ linking: one key per statistic, marked everywhere
+// keys of a row: t:<term> (ANOVA), m:... and x:... (comparisons: a main effect, or inside an interaction),
+// cell:<code> (a condition), lv:<factor>=<level> (a level over the other factor)
+const compOf = (R, k) => (R.comps || []).find(c => c.key === k);
+function owner(R, k) { if (!R || !k) return null; const c = compOf(R, k); return c ? 't:' + c.term : null; }
+const related = (R, a, b) => a === b || owner(R, a) === b || owner(R, b) === a;
+let hov = null, pin = null, curRow = null;
+function paint() {
+  document.querySelectorAll('.hov, .on, .pinned').forEach(e => e.classList.remove('hov', 'on', 'pinned'));
+  const mark = (st, cls) => {
+    if (!st) return;
+    const R = ROWS[st.row];
+    document.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.row === st.row && related(R, st.key, e.dataset.k)) e.classList.add(cls); });
+    document.querySelectorAll('[data-ks]').forEach(e => { if (e.dataset.row === st.row && e.dataset.ks.split(' ').includes(st.key)) e.classList.add(cls); });
+  };
+  mark(pin, 'on');
+  if (pin) document.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.row === pin.row && e.dataset.k === pin.key && e === pin.el) e.classList.add('pinned'); });
+  if (pin) document.querySelectorAll('[data-ks]').forEach(e => { if (e.dataset.row === pin.row && e.dataset.ks.split(' ')[0] === pin.key) e.classList.add('pinned'); });
+  mark(hov, 'hov');
+  document.querySelectorAll('#content tr.data').forEach(tr => tr.classList.toggle('cur', tr.dataset.row === curRow));
+}
+function setHover(row, key) {
+  hov = row ? { row, key } : null;
+  if (row && !pin && row !== curRow) showRow(row);
+  paint();
+}
+let clickUsed = false;
+function toggle(row, key, el) {
+  clickUsed = true;
+  if (pin && pin.row === row && pin.key === key) { pin = null; paint(); return; }
+  pin = { row, key, el };
+  if (row !== curRow) showRow(row);
+  setCollapsed(false);
+  paint();
+}
+function release() { if (pin) { pin = null; paint(); } }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && pin && !document.getElementById('big').open) release(); });
+document.addEventListener('pointerdown', () => { clickUsed = false; }, true);
+document.addEventListener('click', e => {
+  if (clickUsed || !pin) return;
+  if (e.target.closest('button, a, input, select, summary, dialog, .chip, .harrow, .pbar')) return;
+  const s = window.getSelection(); if (s && !s.isCollapsed) return;
+  release();
+});
+// text spans, table cells and rows, statistics rows: data-row + data-k
+function linkable(e) { const el = e.target.closest('[data-k]'); return el && el.dataset.row ? el : null; }
+function wire(root) {
+  root.addEventListener('pointerover', e => { const el = linkable(e); if (el) setHover(el.dataset.row, el.dataset.k);
+    else { const tr = e.target.closest('tr.data'); if (tr) setHover(tr.dataset.row, null); } });
+  root.addEventListener('pointerout', e => { const el = linkable(e); if (el && !el.contains(e.relatedTarget)) setHover(null); });
+  root.addEventListener('focusin', e => { const el = linkable(e); if (el) setHover(el.dataset.row, el.dataset.k); });
+  root.addEventListener('click', e => { const el = linkable(e); if (el) { toggle(el.dataset.row, el.dataset.k, el); return; }
+    const tr = e.target.closest('tr.data'); if (tr) { clickUsed = true; if (!pin) showRow(tr.dataset.row); } });
+  root.addEventListener('keydown', e => { const el = linkable(e); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(el.dataset.row, el.dataset.k, el); } });
+}
+const linkAttrs = (el, row, key) => { el.dataset.row = row; el.dataset.k = key; el.tabIndex = 0; return el; };
+
+// ------------------------------------------------------------------ the violins
+function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); return [1, 2, 2.5, 5, 10].find(m => m * p >= raw * (1 - 1e-9)) * p; }
+// a group's distribution: Gaussian kernel density, Silverman's bandwidth, drawn over the data +/- half a bandwidth
+function kde(v) {
+  const n = v.length;
+  if (n < 3) return null;
+  const s = [...v].sort((x, y) => x - y);
+  const mu = s.reduce((x, y) => x + y, 0) / n;
+  const sd = Math.sqrt(s.reduce((x, y) => x + (y - mu) ** 2, 0) / (n - 1));
+  const q = f => { const i = (n - 1) * f, lo = Math.floor(i); return s[lo] + (s[Math.min(lo + 1, n - 1)] - s[lo]) * (i - lo); };
+  const iqr = q(0.75) - q(0.25);
+  const h = 0.9 * Math.min(sd, iqr > 0 ? iqr / 1.34 : sd) * Math.pow(n, -0.2);
+  if (!(h > 0)) return null;
+  const lo = s[0] - 0.5 * h, hi = s[n - 1] + 0.5 * h, K = 64, grid = [];
+  let dmax = 0;
+  for (let k = 0; k <= K; k++) {
+    const y = lo + (hi - lo) * k / K;
+    let d = 0; for (const x of s) d += Math.exp(-0.5 * ((y - x) / h) ** 2);
+    grid.push([y, d]); dmax = Math.max(dmax, d);
+  }
+  const at = y => { if (y <= lo || y >= hi) return 0; const t = (y - lo) / (hi - lo) * K, k = Math.floor(t);
+    const d0 = grid[k][1], d1 = grid[Math.min(k + 1, K)][1]; return (d0 + (d1 - d0) * (t - k)) / dmax; };
+  return { lo, hi, grid, dmax, at };
+}
+// the parts of a closed outline (X, Y) whose y lies in [a b]: the mean +/- SD stretch of a violin's outline
+function band(X, Y, a, b) {
+  const runs = []; let cur = null;
+  for (let i = 0; i < X.length - 1; i++) {
+    const y0 = Y[i], dy = Y[i + 1] - y0;
+    let t = null;
+    if (dy === 0) { if (y0 >= a && y0 <= b) t = [0, 1]; }
+    else { const ta = (a - y0) / dy, tb = (b - y0) / dy; t = [Math.max(0, Math.min(ta, tb)), Math.min(1, Math.max(ta, tb))]; if (t[0] > t[1]) t = null; }
+    if (!t) { if (cur) { runs.push(cur); cur = null; } continue; }
+    const pt = f => [X[i] + f * (X[i + 1] - X[i]), y0 + f * dy];
+    if (!cur || t[0] > 0) { if (cur) runs.push(cur); cur = [pt(t[0])]; }
+    cur.push(pt(t[1]));
+    if (t[1] < 1) { runs.push(cur); cur = null; }
+  }
+  if (cur) runs.push(cur);
+  return runs;
+}
+const meanSd = (m, sd, d) => [fx(m, d), isNum(sd) ? '(' + fx(sd, d) + ')' : ''];
+const sdv = v => { const n = v.length; if (n < 2) return NaN; const m = v.reduce((a, b) => a + b, 0) / n; return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / (n - 1)); };
+
+// the panels of a row's figure: the main effects, then the interaction read one factor at a time
+function panelsOf(R) {
+  const P = [];
+  const cellVals = lv => R.values[FIDS.map(f => lv[f]).join('|')];
+  const comps = (fid, at) => R.comps.filter(c => c.factor === fid && JSON.stringify(c.at) === JSON.stringify(at));
+  if (FIDS.length === 1) {
+    const f = FAC[FIDS[0]];
+    P.push({ row: 0, id: 'm:' + f.id, title: f.name, fid: f.id, term: f.id, within: f.within,
+             groups: f.levels.map(L => ({ fid: f.id, code: L.code, label: L.short, key: 'cell:' + L.code, name: L.name, vals: cellVals({ [f.id]: L.code }) })),
+             comps: comps(f.id, {}) });
+    return P;
+  }
+  FIDS.forEach(fid => {
+    const f = FAC[fid];
+    P.push({ row: 0, id: 'm:' + fid, title: f.name, fid, term: fid, within: f.within,
+             groups: f.levels.map(L => { const lv = R.levels.find(x => x.factor === fid && x.level === L.code);
+               return { fid, code: L.code, label: L.short, key: lv.key, name: L.name + ' (all ' + FAC[FIDS.find(x => x !== fid)].plural + ')', vals: lv.values }; }),
+             comps: comps(fid, {}) });
+  });
+  const inter = FIDS.join(':');
+  FIDS.forEach((fid, r) => {
+    const f = FAC[fid], g = FAC[FIDS.find(x => x !== fid)];
+    g.levels.forEach(M => {
+      P.push({ row: r + 1, id: 'x:' + fid + '@' + g.id + '=' + M.code, title: M.name, fid, term: inter, within: f.within, reading: [fid, g.id],
+               groups: f.levels.map(L => { const lv = { [fid]: L.code, [g.id]: M.code };
+                 return { fid, code: L.code, label: L.short, key: 'cell:' + FIDS.map(x => lv[x]).join('|'), name: cellName(lv), vals: cellVals(lv) }; }),
+               comps: comps(fid, { [g.id]: M.code }) });
+    });
+  });
+  return P;
+}
+
+// draw a row's figure at the width of its host (redrawn, not scaled, so its text stays ~12 px)
+function drawFigure(host, R, opts) {
+  host.replaceChildren();
+  const W = Math.max(300, Math.round(opts.width));
+  const P = panelsOf(R);
+  const aovOf = t => R.aov.find(a => a.term === t);
+  const inter = FIDS.length === 2 ? aovOf(FIDS.join(':')) : null;
+  const NR = Math.max(...P.map(p => p.row)) + 1;
+  P.forEach(pn => pn.groups.forEach(g => {
+    const v = g.vals.filter(isNum);
+    g.n = v.length; g.mean = v.length ? v.reduce((a, b) => a + b, 0) / v.length : NaN; g.sd = sdv(v); g.kde = kde(v);
+  }));
+  const ext = g => g.vals.filter(isNum).concat(isNum(g.mean) ? [g.mean] : [], g.kde ? [g.kde.lo, g.kde.hi] : []);
+  const all = P.flatMap(pn => pn.groups.flatMap(ext));
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (!(hi > lo)) hi = lo + 1;
+  const st = niceStep((hi - lo) / 6);                      // the axis follows the data (it does not start at 0)
+  const t0 = Math.floor(lo / st + 1e-9) * st, t1 = Math.ceil(hi / st - 1e-9) * st;
+  const ticks = []; for (let v = t0; v <= t1 + st * 1e-6; v += st) ticks.push(+v.toFixed(10));
+  const tickDec = (String(+st.toPrecision(6)).split('.')[1] || '').length;
+  // a caption line per row; two lines when the reading and the interaction's p would not fit side by side
+  const capLong = NR > 1 ? Math.max(...FIDS.map(fid => {
+    const g = FAC[FIDS.find(x => x !== fid)];
+    return (FAC[fid].plural + ' within each ' + g.noun).length + termName(FIDS.join(':')).length + 26; })) : 0;
+  const capH0 = NR > 1 ? (capLong * 6.4 > W - 24 ? 34 : 20) : 0, titleH = 20, labH = 22, gapR = 16, mL = 50, mR = 6;
+  const plotH = Math.round(Math.max(170, Math.min(260, W * 0.42)));
+  // the lines of panels: one row of the design each, or, in a narrow figure, one panel per line (the row's
+  // caption over its first panel), so that the levels' names never run into each other
+  const narrow = W < 460;
+  const lines = [];
+  for (let r = 0; r < NR; r++) {
+    const P0 = P.filter(p => p.row === r);
+    if (narrow) P0.forEach((pn, k) => lines.push({ r, cap: k === 0, panels: [pn] }));
+    else lines.push({ r, cap: true, panels: P0 });
+  }
+  const lineH = L => (L.cap ? capH0 : 0) + titleH + plotH + labH;
+  const H = lines.reduce((a, L) => a + lineH(L), 0) + (lines.length - 1) * gapR + 4;
+  const LAB = 31, BR = 26;                                   // the mean's two lines above it; a bracket and its p
+  // headroom so that a line's brackets fit under its titles: grown until they do (one value scale per line)
+  function padOf(P0) {
+    let pad = BR + 4;
+    for (let it = 0; it < 8; it++) {
+      const Yr = v => plotH - (v - t0) / (t1 - t0) * (plotH - pad);
+      let over = 0;
+      P0.forEach(pn => {
+        const nb = brackets(pn).length;
+        if (!nb) return;
+        const top = Math.min(...pn.groups.filter(g => isNum(g.mean)).map(g => Math.min(Yr(Math.max(...ext(g))), Yr(g.mean) - LAB)));
+        over = Math.max(over, nb * BR + 2 - top);
+      });
+      if (over <= 0.5) break;
+      pad += over;
+    }
+    return pad;
+  }
+  function brackets(pn) {
+    if (pn.groups.length === 2) return pn.comps.slice(0, 1);
+    return pn.comps.filter(c => c.sig);
+  }
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'Violins of ' + R.name + (R.splitName ? ', ' + R.splitName : '') });
+  const tt = $('div', 'tt');
+  const boxes = [], byP = {};
+  const dec = R.dec;
+  let y0 = 0;
+  for (const line of lines) {
+    const P0 = line.panels, r = line.r, capH = line.cap ? capH0 : 0, ly = y0;
+    const yTop = ly + capH + titleH, yBot = yTop + plotH, pad = padOf(P0);
+    y0 += lineH(line) + gapR;
+    const Y = v => yBot - (v - t0) / (t1 - t0) * (plotH - pad);
+    // the row's caption: what it reads, and its ANOVA term
+    if (capH) {
+      const c = S('text', { class: 'cap', x: 0, y: ly + 13, 'font-size': 12 }, svg);
+      if (r === 0) c.textContent = 'Main effects';
+      else {
+        // left: what the row reads; right: the interaction's p (on a second line when the figure is narrow)
+        const [fid, gid] = P0[0].reading;
+        c.textContent = FAC[fid].plural[0].toUpperCase() + FAC[fid].plural.slice(1) + ' within each ' + FAC[gid].noun;
+        const two = capH > 20;
+        const c2 = S('text', { class: 'cap', x: two ? 0 : W - mR, y: ly + (two ? 28 : 13), 'text-anchor': two ? 'start' : 'end', 'font-size': 12 }, svg);
+        S('tspan', {}, c2).textContent = termName(inter.term) + ': ';
+        S('tspan', { class: inter.sig ? 'b' : '' }, c2).textContent = inter.sig ? plab(inter.p) : plab(inter.p) + ', NS (pale: outside)';
+      }
+    }
+    const nb = P0.reduce((a, pn) => a + pn.groups.length + 0.5, 0);
+    const gap = 22, avail = W - mL - mR - gap * (P0.length - 1);
+    let x0 = mL;
+    P0.forEach(pn => {
+      const n = pn.groups.length, w = avail * (n + 0.5) / nb;
+      const cx = k => x0 + w * (k + 0.75) / (n + 0.5);
+      const hw = Math.min(0.40 * w / (n + 0.5), 62);
+      const outside = pn.term.includes(':') && !(inter && inter.sig);
+      const main = pn.comps.length === 1 ? pn.comps[0].key : 't:' + pn.term;
+      const pkey = pn.row === 0 ? 't:' + pn.term : main;
+      const pks = [pkey, 't:' + pn.term].concat(pn.comps.map(c => c.key)).filter((k, i, a) => a.indexOf(k) === i);
+      const bg = S('rect', { class: 'pbg', x: x0 - 8, y: yTop - titleH, width: w + 14, height: plotH + titleH + labH, rx: 6 }, svg);
+      bg.dataset.row = R.id; bg.dataset.ks = pks.join(' ');
+      boxes.push({ key: pkey, x: x0 - 8, y: yTop - titleH, w: w + 14, h: plotH + titleH + labH, v: false });
+      pn.groups.forEach((g, k) => {
+        const b = S('rect', { class: 'vbg', x: cx(k) - hw - 5, y: yTop, width: 2 * hw + 10, height: plotH + labH - 2, rx: 5 }, svg);
+        b.dataset.row = R.id; b.dataset.ks = g.key;
+        boxes.push({ key: g.key, x: cx(k) - hw - 5, y: yTop, w: 2 * hw + 10, h: plotH + labH - 2, v: true, g });
+      });
+      ticks.forEach(v => S('line', { class: 'grid', x1: x0, x2: x0 + w, y1: Y(v), y2: Y(v) }, svg));
+      if (t0 < 0 && t1 > 0) S('line', { class: 'zero', x1: x0, x2: x0 + w, y1: Y(0), y2: Y(0) }, svg);
+      S('line', { class: 'axis', x1: x0, x2: x0, y1: yTop, y2: yBot }, svg);
+      S('line', { class: 'axis', x1: x0, x2: x0 + w, y1: yBot, y2: yBot }, svg);
+      S('text', { class: 'ttl', x: x0 + w / 2, y: yTop - 6, 'text-anchor': 'middle', 'font-size': 12.5 }, svg).textContent = pn.title;
+      // the violins, in the level's colour
+      pn.groups.forEach((g, k) => {
+        const c = cx(k);
+        if (g.kde) {
+          const gr = g.kde.grid, dm = g.kde.dmax;
+          let d = `M${c},${Y(gr[0][0])}`;
+          gr.forEach(([y, v]) => { d += `L${c + hw * v / dm},${Y(y)}`; });
+          for (let i = gr.length - 1; i >= 0; i--) d += `L${c - hw * gr[i][1] / dm},${Y(gr[i][0])}`;
+          const pth = S('path', { d: d + 'Z', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }, svg);
+          pth.style.fill = col(g.fid, g.code); pth.style.fillOpacity = .3;
+          pth.style.stroke = `color-mix(in srgb, ${col(g.fid, g.code)} 75%, var(--ink))`;
+          if (isNum(g.sd) && g.sd > 0) {
+            const PX = [c], PY = [gr[0][0]];
+            gr.forEach(([y, v]) => { PX.push(c + hw * v / dm); PY.push(y); });
+            for (let i = gr.length - 1; i >= 0; i--) { PX.push(c - hw * gr[i][1] / dm); PY.push(gr[i][0]); }
+            PX.push(PX[0]); PY.push(PY[0]);
+            band(PX, PY, g.mean - g.sd, g.mean + g.sd).forEach(run => {
+              const sp = S('path', { class: 'sdc', d: run.map(([x, y], i) => (i ? 'L' : 'M') + x + ',' + Y(y)).join('') }, svg);
+              sp.style.stroke = `color-mix(in srgb, ${col(g.fid, g.code)} 55%, var(--ink))`;
+            });
+          }
+        }
+        S('text', { class: 'tick', x: c, y: yBot + 16, 'text-anchor': 'middle', 'font-size': 12 }, svg).textContent = g.label;
+      });
+      // every participant: a cross at their own value; a grey line joins their values (within factor)
+      const spread = i => { const u = (((i + 1) * 0.6180339887) % 1) * 2 - 1;
+        const s = Math.min(...pn.groups.map(g => g.kde && isNum(g.vals[i]) ? g.kde.at(g.vals[i]) : 1));
+        return u * hw * 0.8 * (isFinite(s) ? s : 0.5); };
+      const N = DATA.people.length, off = [];
+      for (let i = 0; i < N; i++) off.push(spread(i));
+      if (pn.within) for (let i = 0; i < N; i++) {
+        const pts = pn.groups.map((g, k) => isNum(g.vals[i]) ? [cx(k) + off[i], Y(g.vals[i])] : null).filter(Boolean);
+        if (pts.length < 2) continue;
+        const l = S('path', { class: 'pline', d: pts.map((p, j) => (j ? 'L' : 'M') + p[0] + ',' + p[1]).join('') }, svg);
+        (byP[i] = byP[i] || []).push(l);
+      }
+      pn.groups.forEach((g, k) => {
+        g.vals.forEach((v, i) => {
+          if (!isNum(v)) return;
+          const px = cx(k) + off[i], py = Y(v), s = 3.2;
+          const gg = S('g', {}, svg);
+          S('circle', { class: 'ring', cx: px, cy: py, r: 6 }, gg);
+          S('path', { class: 'ind', d: `M${px - s},${py - s}L${px + s},${py + s}M${px - s},${py + s}L${px + s},${py - s}` }, gg);
+          const hit = S('circle', { class: 'hit', cx: px, cy: py, r: 6.5 }, gg);
+          (byP[i] = byP[i] || []).push(gg);
+          hit.addEventListener('pointerenter', () => {
+            person(i, true);
+            tip([['b', DATA.people[i]], ['', ' · ' + g.name + ': ' + withUnit(fx(v, dec + 1), R.unit)]].concat(personLines(i)), px, py);
+          });
+          hit.addEventListener('pointerleave', () => { person(i, false); tt.style.display = 'none'; });
+        });
+      });
+      // the mean: a black line across the violin, its mean and (SD) written on it
+      pn.groups.forEach((g, k) => {
+        if (!isNum(g.mean)) return;
+        const c = cx(k), y = Y(g.mean);
+        S('line', { class: 'mean', x1: c - hw * 0.62, x2: c + hw * 0.62, y1: y, y2: y }, svg);
+        const lines = meanSd(g.mean, g.sd, dec).filter(Boolean);
+        const t = S('text', { class: 'mv', x: c, y: y - 5 - 14 * (lines.length - 1), 'text-anchor': 'middle', 'font-size': 11.5,
+                              'font-weight': 700, 'paint-order': 'stroke', 'stroke-width': 3, 'stroke-linejoin': 'round' }, svg);
+        lines.forEach((l, i) => { S('tspan', { x: c, dy: i ? 13 : 0 }, t).textContent = l; });
+      });
+      // the comparisons: a bracket over the two levels and its p, bold when significant; pale outside the interaction
+      const tops = pn.groups.filter(g => isNum(g.mean)).map(g => Math.min(Y(Math.max(...ext(g))), Y(g.mean) - LAB));
+      let yb = Math.min(...tops) - 4;
+      brackets(pn).forEach(c => {
+        const ia = pn.groups.findIndex(g => g.code === c.test), ib = pn.groups.findIndex(g => g.code === c.ref);
+        const xa = cx(Math.min(ia, ib)), xb = cx(Math.max(ia, ib));
+        const gb = S('g', { class: 'brk' + (outside ? ' out' : '') }, svg);
+        gb.dataset.row = R.id; gb.dataset.ks = c.key + ' t:' + c.term;
+        const bold = c.sig && !outside;
+        const lw = ((c.sig ? '' : 'NS: ') + plab(c.p)).length * 6.4 + 10, cw = Math.max(xb - xa + 12, lw);
+        S('rect', { class: 'sbg', x: (xa + xb) / 2 - cw / 2, y: yb - 19, width: cw, height: 26, rx: 4 }, gb);
+        S('path', { class: 'br', d: `M${xa},${yb + 5}V${yb}H${xb}V${yb + 5}` }, gb);
+        const lab = S('text', { class: 'pl' + (c.sig ? '' : ' ns'), x: (xa + xb) / 2, y: yb - 5, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': bold ? 700 : 400 }, gb);
+        lab.textContent = (c.sig ? '' : 'NS: ') + plab(c.p);
+        boxes.push({ key: c.key, x: xa, y: yb - 18, w: xb - xa, h: 24, v: true, c });
+        yb -= BR;
+      });
+      x0 += w + gap;
+    });
+    // the y axis's labels last, over the panels' highlight
+    ticks.forEach(v => S('text', { class: 'tick', x: mL - 7, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11.5 }, svg).textContent = fx(v, tickDec));
+    const yl = S('text', { class: 'tick', 'text-anchor': 'middle', 'font-size': 11.5, transform: `translate(11 ${(yTop + yBot) / 2}) rotate(-90)` }, svg);
+    yl.textContent = R.unit;
+  }
+  function tip(parts, px, py) {
+    tt.replaceChildren(...parts.map(tipPart));
+    tt.style.display = 'block';
+    const r2 = svg.getBoundingClientRect(), k = r2.width / W;
+    tt.style.left = Math.max(0, Math.min(px * k + 12, r2.width - tt.offsetWidth - 4)) + 'px';
+    tt.style.top = Math.max(0, py * k - tt.offsetHeight - 8) + 'px';
+  }
+  // the crosses of a marked participant are copied into a top layer (no pointer events), so that they come
+  // in front of the mean labels while marked
+  host._byP = byP; host._top = S('g', { 'pointer-events': 'none' }, svg);
+  // the panel, violin or bracket under the pointer: its statistic marked everywhere; a click keeps it
+  const under = ev => { const r = svg.getBoundingClientRect(), k = W / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k;
+    const inb = b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+    return boxes.find(o => o.c && inb(o)) || boxes.find(o => o.v && inb(o)) || boxes.find(o => !o.v && inb(o)) || null; };
+  let at = null;
+  svg.addEventListener('pointermove', ev => {
+    const b = under(ev), key = b ? b.key : null;
+    if (b && b.c && !ev.target.classList.contains('hit')) {
+      const c = b.c, bits = [['b', compName(c)], ['', ': ' + compStat(R, c)]];
+      if (c.term.includes(':')) bits.push(['', c.inside ? ' · inside the interaction' : ' · outside the interaction']);
+      tip(bits, b.x + b.w / 2, b.y);
+    } else if (b && b.g && !ev.target.classList.contains('hit')) {
+      const g = b.g; tip([['b', g.name], ['', ': mean ' + withUnit(fx(g.mean, dec), R.unit) + ' (SD ' + fx(g.sd, dec) + '), n = ' + g.n]], b.x + b.w / 2, b.y + 10);
+    } else if (!ev.target.classList.contains('hit')) tt.style.display = 'none';
+    if (key === at) return; at = key; setHover(R.id, key);
+  });
+  svg.addEventListener('pointerleave', () => { at = null; tt.style.display = 'none'; setHover(null); });
+  svg.addEventListener('click', ev => { const b = under(ev); if (b) toggle(R.id, b.key, null); });
+  host.append(svg, tt);
+}
+// a participant marked in every panel of every figure shown, and in the values table
+function person(i, on) {
+  document.querySelectorAll('.fig').forEach(f => {
+    if (!f._byP) return;
+    f._top.replaceChildren();
+    (f._byP[i] || []).forEach(e => {
+      if (e.classList.contains('pline')) { e.classList.toggle('hl', on); return; }
+      e.querySelectorAll('.ind,.ring').forEach(q => q.classList.toggle('hl', on));
+      if (on) { const c = e.cloneNode(true); c.querySelectorAll('.hit').forEach(h => h.remove()); f._top.append(c); }
+    });
+  });
+  document.querySelectorAll('table.pp tbody tr').forEach(tr => { if (+tr.dataset.p === i) tr.classList.toggle('hl', on); });
+}
+const compName = c => {
+  const f = FAC[c.factor];
+  let s = f.lv[c.test].name + ' − ' + f.lv[c.ref].name;
+  const at = Object.entries(c.at);
+  if (at.length) s += ' (' + at.map(([k, v]) => FAC[k].lv[v].name.toLowerCase()).join(', ') + ')';
+  return s;
+};
+const compStat = (R, c) => [withUnit(sgn(c.diff, R.dec), R.unit)].concat(isNum(c.rel) ? [sgn(c.rel, 1) + '%'] : [], [plab(c.p)],
+  isNum(c.g) ? ['g = ' + sgn(c.g, 2)] : []).join(', ') + (isNum(c.t) ? ` (t = ${fx(c.t, 2)} / ±${fx(c.thr, 2)})` : '');
+
+// ------------------------------------------------------------------ the statistics under the figure
+function statTable(head, rows, R) {
+  const t = $('table', 's'), th = $('thead'), hr = $('tr');
+  head.forEach(h => hr.append($('th', null, h))); th.append(hr); t.append(th);
+  const tb = $('tbody');
+  rows.forEach(r => {
+    const tr = $('tr', r.cls || null);
+    if (r.key) { linkAttrs(tr, R.id, r.key); }
+    if (r.title) tr.title = r.title;
+    if (r.sub) { const td = $('td', null, r.sub); td.colSpan = head.length; tr.append(td); }
+    else r.cells.forEach(c => { const td = $('td', c && c.b ? 'b' : null); td.textContent = c && c.t !== undefined ? c.t : c; tr.append(td); });
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function statsOf(R) {
+  const box = $('div', 'stats');
+  const nPerm = DATA.nPerm ? DATA.nPerm.toLocaleString('en') : null;
+  box.append($('h4', null, 'Analysis of variance'));
+  box.append(statTable(['Effect', 'F', 'df', 'p'], R.aov.map(a => ({ key: a.key,
+    title: isNum(a.thr) ? `F threshold (p = ${ALPHA}): ${fx(a.thr, 2)}` : '',
+    cells: [termName(a.term), fx(a.F, 2), isNum(a.df1) ? a.df1 + ', ' + a.df2 : '–', { t: pfmt(a.p), b: a.sig }] })), R));
+  box.append($('p', 'snote', (nPerm ? `Exact p-values from all ${nPerm} sign-flip permutations. ` : 'p-values from the statistics provided. ') + `Bold: p ≤ ${ALPHA}.`));
+  const rows = [];
+  R.levels.forEach(L => rows.push({ key: L.key, cells: [FAC[L.factor].lv[L.level].name + ' (all ' + FAC[FIDS.find(x => x !== L.factor)].plural + ')', String(L.n), fx(L.mean, R.dec), fx(L.sd, R.dec)] }));
+  R.cells.forEach(c => rows.push({ key: 'cell:' + c.code, cells: [cellName(c.lv), String(c.n), fx(c.mean, R.dec), fx(c.sd, R.dec)] }));
+  box.append($('h4', null, 'Conditions (' + (R.unit || 'values') + ')'));
+  box.append(statTable(['Condition', 'n', 'Mean', 'SD'], rows, R));
+  const head = ['Comparison', 'Difference' + (R.unit ? ' (' + R.unit + ')' : '')].concat(R.relative ? ['Relative'] : [], ['p', 'g']);
+  const crow = c => {
+    const out = c.term.includes(':') && !c.inside;
+    return { key: c.key, cls: out ? 'outr' : '', title: (isNum(c.t) ? `t = ${fx(c.t, 2)}, threshold ±${fx(c.thr, 2)}` : '') + (isNum(c.pOwn) ? `; p on its own = ${pfmt(c.pOwn)}` : '') + (out ? '; outside the interaction' : ''),
+             cells: [compName(c), sgn(c.diff, R.dec)].concat(R.relative ? [sgn(c.rel, 1) + '%'] : [], [{ t: pfmt(c.p), b: c.sig && !out }], [sgn(c.g, 2)]) };
+  };
+  const cr = [];
+  R.comps.filter(c => !c.term.includes(':')).forEach(c => cr.push(crow(c)));
+  if (FIDS.length === 2) {
+    const X = R.aov.find(a => a.term.includes(':'));
+    FIDS.forEach(fid => {
+      const g = FAC[FIDS.find(x => x !== fid)];
+      cr.push({ sub: FAC[fid].plural[0].toUpperCase() + FAC[fid].plural.slice(1) + ' within each ' + g.noun + ' — ' +
+        (X.sig ? 'inside the interaction (' + plab(X.p) + ')' : 'outside the interaction (' + plab(X.p) + '): pale, never bold') });
+      R.comps.filter(c => c.term.includes(':') && c.factor === fid).forEach(c => cr.push(crow(c)));
+    });
+  }
+  box.append($('h4', null, 'Comparisons'));
+  box.append(statTable(head, cr, R));
+  box.append($('p', 'snote', 'Differences from the group means' + (R.relative ? '; relative: over the second level’s mean' : '') +
+    '. p corrected within each family of comparisons (a main effect; the comparisons of the interaction). g: Hedges’ g. Hover a row for t and its threshold.'));
+  return box;
+}
+
+// ------------------------------------------------------------------ the panel beside (or under) the table
+const panelBox = document.getElementById('panel'), panelBody = document.getElementById('panelBody');
+let figHost = null, figW = 0;
+function showRow(rid) {
+  const R = ROWS[rid];
+  if (!R) return;
+  const same = curRow === rid;
+  curRow = rid;
+  if (same) return;
+  const h = panelBody.offsetHeight, sc = panelBox.scrollTop;
+  panelBody.style.minHeight = h + 'px';
+  panelBody.replaceChildren();
+  panelBody.append($('div', 'kicker', 'Figure and statistics'));
+  panelBody.append($('h3', null, rowTitle(R)));
+  panelBody.append($('p', 'hint', R.kind === 'corr' ? 'Hover a panel or a participant; click a panel to keep it.' :
+    'Hover a panel, a violin or a p-value to mark its statistics everywhere; click to keep it.'));
+  const wrap = $('div', 'figwrap');
+  figHost = $('div', 'fig');
+  const grow = $('button', 'grow', '⤢'); grow.type = 'button'; grow.title = 'Enlarge the figure'; grow.setAttribute('aria-label', 'Enlarge the figure');
+  grow.addEventListener('click', () => openBig(R));
+  wrap.append(figHost, grow);
+  panelBody.append(wrap);
+  panelBody.append($('p', 'figkey', R.kind === 'corr' ? corrKey(R) : figKey(R)));
+  panelBody.append(R.kind === 'corr' ? corrStats(R) : statsOf(R));
+  document.getElementById('ptitle').textContent = R.name + (R.splitName ? ' — ' + R.splitName : '');
+  figW = figHost.clientWidth;
+  drawerOf(R)(figHost, R, { width: figW });
+  panelBody.style.minHeight = '';
+  panelBox.scrollTop = sc;
+}
+function figKey(R) {
+  return 'Violins: each group’s distribution, the outline bold over the mean ± SD; black line: the mean, with the mean and (SD) on it. ' +
+    '×: one participant each' + (DATA.factors.some(f => f.within) ? ', joined across the levels of a within-participant factor' : '') +
+    '. Brackets: the comparison and its p (bold when significant' + (DATA.factors.length === 2 ? '; pale outside the interaction' : '') + ').';
+}
+const later = f => requestAnimationFrame(() => requestAnimationFrame(f));
+if (window.ResizeObserver) new ResizeObserver(() => later(() => {
+  if (!figHost || !curRow || !figHost.isConnected) return;
+  const w = figHost.clientWidth;
+  if (w && Math.abs(w - figW) >= 1) { figW = w; drawerOf(ROWS[curRow])(figHost, ROWS[curRow], { width: w }); paint(); }
+})).observe(panelBox);
+const big = document.getElementById('big'), bigBody = document.getElementById('bigBody');
+function openBig(R) {
+  document.getElementById('bigTitle').textContent = rowTitle(R);
+  bigBody.replaceChildren();
+  const f = $('div', 'fig figwrap'); bigBody.append(f);
+  big.showModal();
+  drawerOf(R)(f, R, { width: Math.min(bigBody.clientWidth, 1160) });
+  paint();
+}
+document.getElementById('bigClose').addEventListener('click', () => big.close());
+big.addEventListener('click', e => { if (e.target === big) big.close(); });
+big.addEventListener('close', () => { bigBody.replaceChildren(); paint(); });
+wire(bigBody); wire(panelBody);
+
+// docked under the table (narrow screens): the panel can be hidden; pinning shows it again. Remembered.
+const pToggle = document.getElementById('pToggle');
+function setCollapsed(h) {
+  if (panelBox.classList.contains('collapsed') === h) return;
+  panelBox.classList.toggle('collapsed', h);
+  pToggle.textContent = h ? 'Show figure' : 'Hide figure';
+  pToggle.setAttribute('aria-expanded', String(!h));
+  try { localStorage.setItem('srd-panel-hidden', h ? '1' : '0'); } catch (e) {}
+}
+pToggle.addEventListener('click', () => setCollapsed(!panelBox.classList.contains('collapsed')));
+try { if (localStorage.getItem('srd-panel-hidden') === '1') setCollapsed(true); } catch (e) {}
+
+// ------------------------------------------------------------------ the tables
+function hscroll(sc) {
+  const wrap = $('div', 'hscroll'); wrap.append(sc);
+  const arrow = (side, dir, label) => {
+    const b = $('button', 'harrow ' + side); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label);
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="' + (dir < 0 ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7') +
+      '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    b.addEventListener('click', () => sc.scrollBy({ left: dir * Math.max(160, 0.6 * sc.clientWidth), behavior: 'smooth' }));
+    wrap.append(b);
+  };
+  arrow('l', -1, 'Scroll the table left'); arrow('r', 1, 'Scroll the table right');
+  const update = () => { const room = sc.scrollWidth - sc.clientWidth;
+    wrap.classList.toggle('canl', sc.scrollLeft > 1); wrap.classList.toggle('canr', sc.scrollLeft < room - 1); };
+  sc.addEventListener('scroll', update, { passive: true });
+  wrap.addEventListener('pointerenter', update);
+  if (window.ResizeObserver) new ResizeObserver(update).observe(sc);
+  return wrap;
+}
+function colKey(fid, code) { const k = $('span', 'key'); k.style.background = col(fid, code); return k; }
+function mainTable(tab) {
+  const t = $('table', 't'), th = $('thead');
+  const two = FIDS.length === 2, A = FAC[FIDS[0]], B = two ? FAC[FIDS[1]] : null;
+  const first = !tab.multi && ROWS[tab.rows[0]].splitName ? DATA.split : 'Variable';
+  const cells = ROWS[tab.rows[0]].cells;
+  if (two) {
+    const h1 = $('tr');
+    h1.append($('th'), $('th'));
+    B.levels.forEach(L => { const c = $('th'); c.append(colKey(B.id, L.code), document.createTextNode(L.name)); c.colSpan = A.levels.length; h1.append(c); });
+    const pc = $('th', null, 'p'); pc.colSpan = DATA.terms.length; h1.append(pc);
+    th.append(h1);
+  }
+  const h2 = $('tr');
+  h2.append($('th', null, first), $('th', null, 'Unit'));
+  cells.forEach(c => { const x = $('th'); x.append(colKey(A.id, c.lv[A.id]), document.createTextNode(A.lv[c.lv[A.id]].short)); h2.append(x); });
+  DATA.terms.forEach(tm => h2.append($('th', null, two ? termName(tm) : 'p ' + termName(tm))));
+  th.append(h2); t.append(th);
+  const tb = $('tbody');
+  tab.rows.forEach(rid => {
+    const R = ROWS[rid], tr = $('tr', 'data'); tr.dataset.row = rid;
+    tr.append($('td', null, rowLabel(R, tab.multi)), $('td', 'u', R.unit));
+    R.cells.forEach(c => tr.append(linkAttrs($('td', 'k', fx(c.mean, R.dec) + ' (' + fx(c.sd, R.dec) + ')'), rid, 'cell:' + c.code)));
+    R.aov.forEach(a => tr.append(linkAttrs($('td', 'k' + (a.sig ? ' b' : ''), pfmt(a.p)), rid, a.key)));
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function peopleTable(tab) {
+  const t = $('table', 't pp'), th = $('thead'), h1 = $('tr'), h2 = $('tr');
+  h1.append($('th')); h2.append($('th', null, 'Participant'));
+  tab.rows.forEach((rid, gi) => {
+    const R = ROWS[rid], c = $('th', 'g0' + (gi % 2 ? ' sh' : ''), rowLabel(R, tab.multi) + (R.unit ? ' (' + R.unit + ')' : ''));
+    c.colSpan = R.cells.length; h1.append(c);
+    R.cells.forEach((cl, k) => h2.append($('th', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), cellShort(cl.lv))));
+  });
+  th.append(h1, h2); t.append(th);
+  const tb = $('tbody');
+  DATA.people.forEach((p, i) => {
+    const tr = $('tr'); tr.dataset.p = i; tr.append($('td', null, p));
+    tab.rows.forEach((rid, gi) => { const R = ROWS[rid];
+      R.cells.forEach((cl, k) => tr.append($('td', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), fx(R.values[cl.code][i], R.dec + 1)))); });
+    tr.addEventListener('pointerenter', () => person(i, true));
+    tr.addEventListener('pointerleave', () => person(i, false));
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function csvOf(tab) {
+  const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  const head = ['participant'];
+  tab.rows.forEach(rid => { const R = ROWS[rid]; R.cells.forEach(c => head.push(q(rowLabel(R, tab.multi) + ' ' + cellName(c.lv, ' ') + (R.unit ? ' (' + R.unit + ')' : '')))); });
+  const lines = [head.join(',')];
+  DATA.people.forEach((p, i) => { const r = [p];
+    tab.rows.forEach(rid => { const R = ROWS[rid]; R.cells.forEach(c => { const v = R.values[c.code][i]; r.push(isNum(v) ? String(v) : ''); }); });
+    lines.push(r.join(',')); });
+  return lines.join('\r\n') + '\r\n';
+}
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' }));
+  a.download = name; document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+// ------------------------------------------------------------------ participants: characteristics, cards, figure
+const PI = DATA.people_info;
+const PV = {}; if (PI) PI.vars.forEach(v => { PV[v.id] = v; });
+const tipPart = ([t, s]) => t === 'br' ? $('br') : t === 'm' ? $('span', 'm', s) : t ? $(t, null, s) : document.createTextNode(s);
+// a participant's characteristics, for the tooltips of their crosses everywhere
+function personLines(i) {
+  if (!PI) return [];
+  const bits = PI.cats.map(c => { const L = c.levels.find(l => l.code === c.values[i]); return L ? L.name : ''; })
+    .concat(PI.vars.map(v => isNum(v.values[i]) ? v.name.toLowerCase() + ' ' + withUnit(fx(v.values[i], v.vdec), v.unit) : ''))
+    .filter(Boolean);
+  return bits.length ? [['br'], ['m', bits.join(' · ')]] : [];
+}
+const rowTitle = R => R.kind === 'corr'
+  ? R.name + (R.splitName ? ' — ' + R.splitName : '') + ': ' + (PV[R.x] ? PV[R.x].name.toLowerCase() : 'correlation')
+  : R.name + (R.splitName ? ' — ' + R.splitName : '') + (R.unit ? ' (' + R.unit + ')' : '');
+const drawerOf = R => R.kind === 'corr' ? drawScatter : drawFigure;
+// the tooltip of a figure, at (px, py) in its own coordinates
+function figTip(tt, svg, W, parts, px, py) {
+  tt.replaceChildren(...parts.map(tipPart));
+  tt.style.display = 'block';
+  const r2 = svg.getBoundingClientRect(), k = r2.width / W;
+  tt.style.left = Math.max(0, Math.min(px * k + 12, r2.width - tt.offsetWidth - 4)) + 'px';
+  tt.style.top = Math.max(0, py * k - tt.offsetHeight - 8) + 'px';
+}
+const cross = (g, px, py, s) => S('path', { class: 'ind', d: `M${px - s},${py - s}L${px + s},${py + s}M${px - s},${py + s}L${px + s},${py - s}` }, g);
+// a figure's pointer: the box under it marks its statistic everywhere; a click keeps it
+function wireBoxes(svg, W, rowId, boxes, tt) {
+  const under = ev => { const r = svg.getBoundingClientRect(), k = W / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k;
+    return boxes.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) || null; };
+  let at = null;
+  svg.addEventListener('pointermove', ev => { const b = under(ev), key = b ? b.key : null; if (key === at) return; at = key; setHover(rowId, key); });
+  svg.addEventListener('pointerleave', () => { at = null; tt.style.display = 'none'; setHover(null); });
+  svg.addEventListener('click', ev => { const b = under(ev); if (b) toggle(rowId, b.key, null); });
+}
+function axisTicks(lo, hi, n) {
+  if (!(hi > lo)) { hi = lo + 1; }
+  const st = niceStep((hi - lo) / n), t0 = Math.floor(lo / st + 1e-9) * st, t1 = Math.ceil(hi / st - 1e-9) * st;
+  const ticks = []; for (let v = t0; v <= t1 + st * 1e-6; v += st) ticks.push(+v.toFixed(10));
+  return { t0, t1, ticks, dec: (String(+st.toPrecision(6)).split('.')[1] || '').length };
+}
+
+// the participants' figure: one violin per characteristic, every participant as a cross
+function drawTraits(host, opts) {
+  host.replaceChildren();
+  const W = Math.max(300, Math.round(opts.width)), V = PI.vars;
+  const nCol = Math.max(1, Math.min(V.length, Math.floor(W / 165)));
+  const nRow = Math.ceil(V.length / nCol), gap = 18, pw = (W - gap * (nCol - 1)) / nCol;
+  const titleH = 22, plotH = 170, labH = 8, mL = 40;
+  const H = nRow * (titleH + plotH + labH) + (nRow - 1) * 14 + 4;
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'The participants’ characteristics' });
+  const tt = $('div', 'tt'), byP = {}, boxes = [];
+  V.forEach((v, j) => {
+    const c0 = j % nCol, r0 = Math.floor(j / nCol);
+    const x0 = c0 * (pw + gap), y0 = r0 * (titleH + plotH + labH + 14);
+    const vals = v.values.map(x => isNum(x) ? x : null), k = kde(vals.filter(isNum));
+    const ext = vals.filter(isNum).concat(k ? [k.lo, k.hi] : []);
+    const A = axisTicks(Math.min(...ext), Math.max(...ext), 4);
+    const yTop = y0 + titleH + 26, yBot = y0 + titleH + plotH;
+    const Y = x => yBot - (x - A.t0) / (A.t1 - A.t0) * (yBot - yTop);
+    const bg = S('rect', { class: 'pbg', x: x0, y: y0, width: pw, height: titleH + plotH + labH, rx: 6 }, svg);
+    bg.dataset.row = 'participants'; bg.dataset.ks = v.key;
+    boxes.push({ key: v.key, x: x0, y: y0, w: pw, h: titleH + plotH + labH });
+    S('text', { class: 'ttl', x: x0 + pw / 2, y: y0 + 15, 'text-anchor': 'middle', 'font-size': 12.5 }, svg).textContent = v.name + (v.unit ? ' (' + v.unit + ')' : '');
+    A.ticks.forEach(t => {
+      S('line', { class: 'grid', x1: x0 + mL, x2: x0 + pw - 6, y1: Y(t), y2: Y(t) }, svg);
+      S('text', { class: 'tick', x: x0 + mL - 6, y: Y(t) + 4, 'text-anchor': 'end', 'font-size': 11 }, svg).textContent = fx(t, A.dec);
+    });
+    S('line', { class: 'axis', x1: x0 + mL, x2: x0 + mL, y1: yTop, y2: yBot }, svg);
+    const cx = x0 + mL + (pw - mL - 6) / 2, hw = Math.min((pw - mL - 6) * 0.38, 46);
+    if (k) {
+      const gr = k.grid, dm = k.dmax;
+      let d = `M${cx},${Y(gr[0][0])}`;
+      gr.forEach(([y, q]) => { d += `L${cx + hw * q / dm},${Y(y)}`; });
+      for (let i = gr.length - 1; i >= 0; i--) d += `L${cx - hw * gr[i][1] / dm},${Y(gr[i][0])}`;
+      const pth = S('path', { d: d + 'Z', 'stroke-width': 1.2 }, svg);
+      pth.style.fill = 'var(--muted)'; pth.style.fillOpacity = .22; pth.style.stroke = 'var(--ink-2)';
+      if (isNum(v.sd) && v.sd > 0) {
+        const PX = [cx], PY = [gr[0][0]];
+        gr.forEach(([y, q]) => { PX.push(cx + hw * q / dm); PY.push(y); });
+        for (let i = gr.length - 1; i >= 0; i--) { PX.push(cx - hw * gr[i][1] / dm); PY.push(gr[i][0]); }
+        PX.push(PX[0]); PY.push(PY[0]);
+        band(PX, PY, v.mean - v.sd, v.mean + v.sd).forEach(run => {
+          const sp = S('path', { class: 'sdc', d: run.map(([x, y], i) => (i ? 'L' : 'M') + x + ',' + Y(y)).join('') }, svg);
+          sp.style.stroke = 'var(--ink-2)';
+        });
+      }
+    }
+    vals.forEach((x, i) => {
+      if (!isNum(x)) return;
+      const u = (((i + 1) * 0.6180339887) % 1) * 2 - 1, px = cx + u * hw * 0.8 * (k ? k.at(x) : 0.5), py = Y(x);
+      const g = S('g', { class: 'pt' }, svg);
+      g.dataset.row = 'participants'; g.dataset.ks = PI.cats.map(c => c.key + '=' + c.values[i]).join(' ');
+      cross(g, px, py, 3.2);
+      const hit = S('circle', { class: 'hit', cx: px, cy: py, r: 6.5 }, g);
+      (byP[i] = byP[i] || []).push(g);
+      hit.addEventListener('pointerenter', () => { person(i, true);
+        figTip(tt, svg, W, [['b', DATA.people[i]], ['', ' · ' + v.name.toLowerCase() + ': ' + withUnit(fx(x, v.vdec), v.unit)]].concat(personLines(i)), px, py); });
+      hit.addEventListener('pointerleave', () => { person(i, false); tt.style.display = 'none'; });
+    });
+    if (isNum(v.mean)) {
+      const y = Y(v.mean);
+      S('line', { class: 'mean', x1: cx - hw * 0.62, x2: cx + hw * 0.62, y1: y, y2: y }, svg);
+      const t = S('text', { class: 'mv', x: cx, y: y - 19, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': 700,
+                            'paint-order': 'stroke', 'stroke-width': 3, 'stroke-linejoin': 'round' }, svg);
+      meanSd(v.mean, v.sd, v.dec).forEach((l, i) => { S('tspan', { x: cx, dy: i ? 13 : 0 }, t).textContent = l; });
+    }
+  });
+  host._byP = byP; host._top = S('g', { 'pointer-events': 'none' }, svg);
+  wireBoxes(svg, W, 'participants', boxes, tt);
+  host.append(svg, tt);
+}
+let traitsHost = null, traitsW = 0;
+function drawTraitsNow() {
+  if (!traitsHost || !traitsHost.isConnected) return;
+  traitsW = traitsHost.clientWidth;
+  drawTraits(traitsHost, { width: traitsW });
+}
+if (window.ResizeObserver) new ResizeObserver(() => later(() => {
+  if (!traitsHost || !traitsHost.isConnected) return;
+  const w = traitsHost.clientWidth;
+  if (w && Math.abs(w - traitsW) >= 1) { drawTraitsNow(); paint(); }
+})).observe(document.getElementById('content'));
+// the participants' table, figure and values, after the methods' participants section
+function participantsBlock() {
+  const box = $('div', 'pblock');
+  box.append($('h3', null, 'The participants (n = ' + DATA.people.length + ')'));
+  const t = $('table', 't'), th = $('thead'), hr = $('tr');
+  ['Characteristic', 'Unit', 'Mean (SD)', 'Range'].forEach(h => hr.append($('th', null, h)));
+  th.append(hr); t.append(th);
+  // numeric characteristics only: the counts of a categorical one (sex) are cited in the methods' text,
+  // and each participant's level is in their card and in the values per participant
+  const tb = $('tbody');
+  PI.vars.forEach(v => {
+    const tr = linkAttrs($('tr'), 'participants', v.key);
+    tr.append($('td', null, v.name), $('td', 'u', v.unit), $('td', null, fx(v.mean, v.dec) + ' (' + fx(v.sd, v.dec) + ')'),
+              $('td', null, fx(v.min, v.vdec) + '–' + fx(v.max, v.vdec)));
+    tb.append(tr);
+  });
+  t.append(tb);
+  const sc = $('div', 'tablebox'); sc.append(t); box.append(sc);
+  traitsHost = $('div', 'fig figwrap'); box.append(traitsHost);
+  box.append($('p', 'figkey', 'Each characteristic’s distribution (the outline bold over the mean ± SD; black line: the mean, with the mean and (SD) on it); ×: one participant each. Hover a participant to see all their characteristics.'));
+  const det = $('details');
+  det.append($('summary', null, 'Values per participant'));
+  const pt = $('table', 't pp'), ph = $('thead'), phr = $('tr');
+  ['Participant'].concat(PI.cats.map(c => c.name), PI.vars.map(v => v.name + (v.unit ? ' (' + v.unit + ')' : ''))).forEach(h => phr.append($('th', null, h)));
+  ph.append(phr); pt.append(ph);
+  const pb = $('tbody');
+  DATA.people.forEach((p, i) => {
+    const tr = $('tr'); tr.dataset.p = i; tr.append($('td', null, p));
+    PI.cats.forEach(c => { const L = c.levels.find(l => l.code === c.values[i]); tr.append($('td', null, L ? L.name : '–')); });
+    PI.vars.forEach(v => tr.append($('td', null, fx(v.values[i], v.vdec))));
+    tr.addEventListener('pointerenter', () => person(i, true));
+    tr.addEventListener('pointerleave', () => person(i, false));
+    pb.append(tr);
+  });
+  pt.append(pb);
+  const ps = $('div', 'tablebox'); ps.append(pt); det.append(hscroll(ps));
+  const dl = $('button', 'btn', 'Download these values (CSV)'); dl.type = 'button';
+  dl.addEventListener('click', () => {
+    const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    const lines = [['participant'].concat(PI.cats.map(c => c.id), PI.vars.map(v => q(v.name + (v.unit ? ' (' + v.unit + ')' : '')))).join(',')];
+    DATA.people.forEach((p, i) => lines.push([p].concat(PI.cats.map(c => c.values[i]), PI.vars.map(v => isNum(v.values[i]) ? String(v.values[i]) : '')).join(',')));
+    download('participants.csv', lines.join('\r\n') + '\r\n');
+  });
+  det.append(dl);
+  box.append(det);
+  return box;
+}
+
+// ------------------------------------------------------------------ correlations
+const levelOf = (fid, code) => FAC[fid].lv[code];
+function corrCell(e) { return fx(e.r, 2) + ' (' + pfmt(e.p) + ')'; }
+function corrTable(tab) {
+  const rows = tab.rows.map(r => ROWS[r]);
+  const splits = [...new Set(rows.map(R => R.split))], outs = [...new Set(rows.map(R => R.outcome))];
+  const by = FAC[rows[0].by];
+  const t = $('table', 't'), th = $('thead'), h1 = $('tr'), h2 = $('tr');
+  h1.append($('th')); h2.append($('th', null, 'Variable'));
+  splits.forEach(sp => { const R = rows.find(x => x.split === sp); const c = $('th', null, R.splitName || ''); c.colSpan = by.levels.length; h1.append(c);
+    by.levels.forEach(L => { const x = $('th'); x.append(colKey(by.id, L.code), document.createTextNode(L.name)); h2.append(x); }); });
+  th.append(h1, h2); t.append(th);
+  const tb = $('tbody');
+  outs.forEach(o => {
+    const first = rows.find(R => R.outcome === o);
+    const tr = $('tr', 'data'); tr.dataset.row = first.id; tr.append($('td', null, first.name));
+    splits.forEach(sp => { const R = rows.find(x => x.outcome === o && x.split === sp);
+      by.levels.forEach(L => { const e = R && R.entries.find(x => x.level === L.code);
+        tr.append(e ? linkAttrs($('td', 'k' + (e.sig ? ' b' : ''), corrCell(e)), R.id, e.key) : $('td', null, '–')); }); });
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function corrNote(R) {
+  const C = DATA.corr || {}, X = PV[R.x];
+  return `r (p): Pearson’s r between ${X ? X.noun : 'x'} and ${R.yNoun}, and its p` +
+    (C.family ? ` (${(C.correction || []).join(', ').replace('holm', 'Holm–Bonferroni')} over the ${C.family} tests${C.within ? ' of each ' + C.within : ''})` : '') +
+    `; bold: p ≤ ${ALPHA}. ${R.yFormula ? R.yLabel + ': ' + R.yFormula + '; ' + R.yNeg + '. ' : ''}` +
+    'Hover a value to see its scatter plot; click to keep it.';
+}
+function corrKey(R) {
+  const X = PV[R.x];
+  return '×: one participant each, at their ' + (X ? X.name.toLowerCase() : 'x') + ' and ' + R.yNoun +
+    '. Line: least-squares fit, solid when the correlation is significant, dashed otherwise. Dashed grey: zero.';
+}
+function drawScatter(host, R, opts) {
+  host.replaceChildren();
+  const W = Math.max(300, Math.round(opts.width)), X = PV[R.x], E = R.entries;
+  const nCol = W < 460 ? 1 : E.length, nRow = Math.ceil(E.length / nCol);
+  const mL = 52, mR = 8, gap = 24, titleH = 38, labH = 38;
+  const pw = (W - mL - mR - gap * (nCol - 1)) / nCol;
+  const plotH = Math.round(Math.max(170, Math.min(250, pw * 0.8)));
+  const H = nRow * (titleH + plotH + labH) + (nRow - 1) * 14 + 4;
+  const xs = X.values.filter(isNum);
+  const AX = axisTicks(Math.min(...xs), Math.max(...xs), 4);
+  const ys = E.flatMap(e => e.y.filter(isNum)).concat([0]);
+  const AY = axisTicks(Math.min(...ys), Math.max(...ys), 4);
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'Scatter plots of ' + rowTitle(R) });
+  const tt = $('div', 'tt'), byP = {}, boxes = [];
+  E.forEach((e, j) => {
+    const c0 = j % nCol, r0 = Math.floor(j / nCol);
+    const x0 = mL + c0 * (pw + gap), y0 = r0 * (titleH + plotH + labH + 14);
+    const yTop = y0 + titleH, yBot = yTop + plotH;
+    const Xp = x => x0 + (x - AX.t0) / (AX.t1 - AX.t0) * pw, Yp = y => yBot - (y - AY.t0) / (AY.t1 - AY.t0) * plotH;
+    const bg = S('rect', { class: 'pbg', x: x0 - (c0 ? 8 : mL - 4), y: y0, width: pw + (c0 ? 14 : mL + 2), height: titleH + plotH + labH, rx: 6 }, svg);
+    bg.dataset.row = R.id; bg.dataset.ks = e.key;
+    boxes.push({ key: e.key, x: x0 - 8, y: y0, w: pw + 14, h: titleH + plotH + labH });
+    const L = levelOf(R.by, e.level);
+    S('text', { class: 'ttl', x: x0 + pw / 2, y: y0 + 14, 'text-anchor': 'middle', 'font-size': 12.5 }, svg).textContent = L.name;
+    const st = S('text', { class: 'stl' + (e.sig ? ' b' : ''), x: x0 + pw / 2, y: y0 + 30, 'text-anchor': 'middle', 'font-size': 11.5 }, svg);
+    st.textContent = 'r = ' + fx(e.r, 2) + ', ' + plab(e.p) + (e.sig && e.strength ? ' (' + e.strength + ')' : e.sig ? '' : ', NS');
+    AY.ticks.forEach(v => S('line', { class: 'grid', x1: x0, x2: x0 + pw, y1: Yp(v), y2: Yp(v) }, svg));
+    if (AY.t0 < 0 && AY.t1 > 0) S('line', { class: 'zero', x1: x0, x2: x0 + pw, y1: Yp(0), y2: Yp(0) }, svg);
+    S('line', { class: 'axis', x1: x0, x2: x0, y1: yTop, y2: yBot }, svg);
+    S('line', { class: 'axis', x1: x0, x2: x0 + pw, y1: yBot, y2: yBot }, svg);
+    AX.ticks.forEach(v => S('text', { class: 'tick', x: Xp(v), y: yBot + 15, 'text-anchor': 'middle', 'font-size': 11 }, svg).textContent = fx(v, AX.dec));
+    S('text', { class: 'tick', x: x0 + pw / 2, y: yBot + 31, 'text-anchor': 'middle', 'font-size': 11.5 }, svg).textContent = X.name + (X.unit ? ' (' + X.unit + ')' : '');
+    if (c0 === 0) {
+      AY.ticks.forEach(v => S('text', { class: 'tick', x: x0 - 6, y: Yp(v) + 4, 'text-anchor': 'end', 'font-size': 11 }, svg).textContent = fx(v, AY.dec));
+      S('text', { class: 'tick', 'text-anchor': 'middle', 'font-size': 11.5, transform: `translate(${x0 - mL + 11} ${(yTop + yBot) / 2}) rotate(-90)` }, svg)
+        .textContent = (R.yUnit === '%' ? 'Relative difference (%)' : 'Difference (' + R.yUnit + ')');
+    }
+    // the least-squares line over the participants' range
+    const xa = Math.min(...xs), xb = Math.max(...xs);
+    S('path', { class: 'fit' + (e.sig ? '' : ' ns'), d: `M${Xp(xa)},${Yp(e.intercept + e.slope * xa)}L${Xp(xb)},${Yp(e.intercept + e.slope * xb)}` }, svg);
+    e.y.forEach((y, i) => {
+      const x = X.values[i];
+      if (!isNum(x) || !isNum(y)) return;
+      const px = Xp(x), py = Yp(y), g = S('g', {}, svg);
+      cross(g, px, py, 3.4);
+      const hit = S('circle', { class: 'hit', cx: px, cy: py, r: 7 }, g);
+      (byP[i] = byP[i] || []).push(g);
+      hit.addEventListener('pointerenter', () => { person(i, true);
+        figTip(tt, svg, W, [['b', DATA.people[i]], ['', ' · ' + L.name.toLowerCase() + ': ' + withUnit(sgn(y, R.yDec), R.yUnit) +
+          ' at ' + withUnit(fx(x, X.dec), X.unit)]].concat(personLines(i)), px, py); });
+      hit.addEventListener('pointerleave', () => { person(i, false); tt.style.display = 'none'; });
+    });
+  });
+  host._byP = byP; host._top = S('g', { 'pointer-events': 'none' }, svg);
+  wireBoxes(svg, W, R.id, boxes, tt);
+  host.append(svg, tt);
+}
+function corrStats(R) {
+  const box = $('div', 'stats'), C = DATA.corr || {}, X = PV[R.x];
+  box.append($('h4', null, 'Correlations'));
+  const unit = R.yUnit + ' per ' + (X && X.unit ? X.unit : 'unit');
+  box.append(statTable(['Correlation', 'n', 'r', 'Slope (' + unit + ')', 'p', 'p uncorrected', 'Strength'], R.entries.map(e => ({
+    key: e.key, cells: [levelOf(R.by, e.level).name, String(e.n), { t: fx(e.r, 2), b: e.sig }, sgn(e.slope, 2), { t: pfmt(e.p), b: e.sig },
+                        pfmt(e.pRaw), e.sig ? (e.strength || '–') : '–'] })), R));
+  const words = (C.strength || []).map(([th, w]) => w + ': |r| ≥ ' + th).join('; ');
+  box.append($('p', 'snote', 'Pearson’s r; slope: least squares' + (C.family ? '; p corrected (' + (C.correction || []).join(', ').replace('holm', 'Holm–Bonferroni') +
+    ') over the ' + C.family + ' tests' + (C.within ? ' of each ' + C.within : '') + ', p uncorrected before it' : '') + '. Bold: p ≤ ' + ALPHA + '.' + (words ? ' Strength (significant only): ' + words + '.' : '')));
+  return box;
+}
+function corrPeopleTable(tab) {
+  const rows = tab.rows.map(r => ROWS[r]), X = PV[rows[0].x];
+  const t = $('table', 't pp'), th = $('thead'), h1 = $('tr'), h2 = $('tr');
+  h1.append($('th'), $('th')); h2.append($('th', null, 'Participant'), $('th', null, X.name + (X.unit ? ' (' + X.unit + ')' : '')));
+  rows.forEach((R, gi) => { const c = $('th', 'g0' + (gi % 2 ? ' sh' : ''), R.name + (R.splitName ? ' · ' + R.splitName : '') + ' (' + R.yUnit + ')');
+    c.colSpan = R.entries.length; h1.append(c);
+    R.entries.forEach((e, k) => h2.append($('th', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), levelOf(R.by, e.level).name))); });
+  th.append(h1, h2); t.append(th);
+  const tb = $('tbody');
+  DATA.people.forEach((p, i) => {
+    const tr = $('tr'); tr.dataset.p = i; tr.append($('td', null, p), $('td', null, fx(X.values[i], X.dec)));
+    rows.forEach((R, gi) => R.entries.forEach((e, k) => tr.append($('td', (k ? '' : 'g0') + (gi % 2 ? ' sh' : ''), sgn(e.y[i], R.yDec + 1)))));
+    tr.addEventListener('pointerenter', () => person(i, true));
+    tr.addEventListener('pointerleave', () => person(i, false));
+    tb.append(tr);
+  });
+  t.append(tb);
+  return t;
+}
+function corrCsv(tab) {
+  const rows = tab.rows.map(r => ROWS[r]), X = PV[rows[0].x];
+  const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  const head = ['participant', q(X.name + (X.unit ? ' (' + X.unit + ')' : ''))];
+  rows.forEach(R => R.entries.forEach(e => head.push(q(R.name + (R.splitName ? ' ' + R.splitName : '') + ' ' + levelOf(R.by, e.level).name + ' (' + R.yUnit + ')'))));
+  const lines = [head.join(',')];
+  DATA.people.forEach((p, i) => { const r = [p, isNum(X.values[i]) ? String(X.values[i]) : ''];
+    rows.forEach(R => R.entries.forEach(e => r.push(isNum(e.y[i]) ? String(e.y[i]) : ''))); lines.push(r.join(',')); });
+  return lines.join('\r\n') + '\r\n';
+}
+
+// ------------------------------------------------------------------ citations: the reference in a popover
+// Hover a citation: after 150 ms its reference opens under it (over it when there is no room), with its link;
+// leaving closes it after 250 ms, so the pointer can reach the link. A click keeps it open; Esc, the x, a second
+// click or a click elsewhere closes it. A citation and its entry in the references mark each other.
+const REFS = DATA.refs || {};
+const pop = $('div', 'pop'); pop.hidden = true; pop.setAttribute('role', 'dialog'); document.body.append(pop);
+let popFor = null, popPinned = false, popT = null;
+const markRef = (key, on) => document.querySelectorAll(`.cite[data-cite="${key}"], .refentry[data-ref="${key}"]`)
+  .forEach(e => e.classList.toggle('chov', on));
+function openPop(el, pinned) {
+  const key = el.dataset.cite, ref = REFS[key];
+  if (!ref) return;
+  clearTimeout(popT);
+  if (popFor && popFor !== el) { markRef(popFor.dataset.cite, false); popFor.classList.remove('cpin'); }
+  popFor = el; popPinned = !!pinned;
+  markRef(key, true); el.classList.toggle('cpin', popPinned);
+  pop.classList.toggle('pinned', popPinned);
+  pop.innerHTML = ref.html;
+  pop.querySelectorAll('a[href^="http"]').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+  const x = $('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', closePop);
+  pop.prepend(x);
+  pop.hidden = false;
+  const docW = document.documentElement.clientWidth, pw = Math.min(460, docW - 24);
+  pop.style.width = pw + 'px';
+  // under the line of the citation the pointer is on (a citation may wrap over two lines)
+  const rects = [...el.getClientRects()], r = rects[0] || el.getBoundingClientRect();
+  const left = Math.max(12, Math.min(r.left + r.width / 2 - pw / 2, docW - pw - 12));
+  const below = r.bottom + 6, h = pop.offsetHeight;
+  const top = below + h + 8 > window.innerHeight && r.top - h - 6 > 0 ? r.top - h - 6 : below;
+  pop.style.left = (left + window.scrollX) + 'px';
+  pop.style.top = (top + window.scrollY) + 'px';
+}
+function closePop() {
+  clearTimeout(popT);
+  if (!popFor) return;
+  markRef(popFor.dataset.cite, false); popFor.classList.remove('cpin');
+  popFor = null; popPinned = false; pop.hidden = true;
+}
+document.addEventListener('pointerover', e => {
+  const c = e.target.closest && e.target.closest('.cite');
+  if (c) { clearTimeout(popT); if (popFor !== c && !popPinned) popT = setTimeout(() => openPop(c, false), 150); return; }
+  if (e.target.closest && e.target.closest('.pop')) { clearTimeout(popT); return; }
+  const r = e.target.closest && e.target.closest('.refentry');
+  document.querySelectorAll('.refentry.chov, .cite.chov').forEach(x => { if (!popFor || x.dataset.cite !== popFor.dataset.cite && x.dataset.ref !== popFor.dataset.cite) x.classList.remove('chov'); });
+  if (r) markRef(r.dataset.ref, true);
+  if (popFor && !popPinned) { clearTimeout(popT); popT = setTimeout(closePop, 250); }
+});
+document.addEventListener('click', e => {
+  const c = e.target.closest('.cite');
+  if (c) { clickUsed = true; if (popFor === c && popPinned) closePop(); else openPop(c, true); return; }
+  if (popFor && !e.target.closest('.pop')) closePop();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && popFor) closePop();
+  const c = e.target.closest && e.target.closest('.cite');
+  if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openPop(c, true); }
+});
+document.addEventListener('focusin', e => { const c = e.target.closest && e.target.closest('.cite'); if (c && !popPinned) openPop(c, false); });
+document.addEventListener('focusout', e => { const c = e.target.closest && e.target.closest('.cite'); if (c && !popPinned && popFor === c) closePop(); });
+window.addEventListener('resize', () => { if (popFor && !popPinned) closePop(); });
+
+// ------------------------------------------------------------------ tabs
+const content = document.getElementById('content'), main = document.getElementById('main');
+wire(content);
+let nav = { top: 'methods', g: 0, t: 0 };            // the document opens on its methods
+try { const v = JSON.parse(localStorage.getItem('srd-nav') || 'null'); if (v && (v.top === 'methods' || v.top === 'results') && DATA.groups[v.g] && DATA.groups[v.g].tabs[v.t]) nav = v; } catch (e) {}
+function save() { try { localStorage.setItem('srd-nav', JSON.stringify(nav)); } catch (e) {} }
+function chips(host, items, on, pick) {
+  host.replaceChildren();
+  items.forEach((label, i) => { const b = $('button', 'chip', label); b.type = 'button'; b.setAttribute('aria-pressed', String(i === on));
+    b.addEventListener('click', () => pick(i)); host.append(b, document.createTextNode(' ')); });
+}
+function render() {
+  pin = null; hov = null; curRow = null; closePop();
+  const isM = nav.top === 'methods';
+  document.getElementById('tabMethods').setAttribute('aria-selected', String(isM));
+  document.getElementById('tabResults').setAttribute('aria-selected', String(!isM));
+  main.classList.toggle('methods', isM);
+  document.getElementById('groupbar').hidden = isM || DATA.groups.length < 2;
+  const G = DATA.groups[nav.g];
+  document.getElementById('tabbar').hidden = isM || G.tabs.length < 2;
+  content.replaceChildren();
+  if (isM) {
+    const art = $('div', 'box prose');
+    DATA.methods.forEach(s => {
+      if (s.h) art.append($('h2', null, s.h));
+      s.p.forEach(h => art.append(html('p', null, h)));
+      if (DATA.people_info && s.h === DATA.people_info.section) art.append(participantsBlock());
+    });
+    art.querySelectorAll('.ref').forEach(sp => { sp.tabIndex = 0; sp.setAttribute('role', 'button'); });
+    content.append(art);
+    drawTraitsNow();
+    save(); return;
+  }
+  chips(document.getElementById('groups'), DATA.groups.map(g => g.label), nav.g, i => { nav.g = i; nav.t = 0; render(); });
+  chips(document.getElementById('tabs'), G.tabs.map(t => t.label), nav.t, i => { nav.t = i; render(); });
+  const tab = G.tabs[nav.t];
+  const rb = $('div', 'box results');
+  rb.append($('h2', null, 'Results'));
+  tab.text.forEach(h => rb.append(html('p', null, h)));
+  rb.querySelectorAll('.ref').forEach(sp => { sp.tabIndex = 0; sp.setAttribute('role', 'button'); });
+  content.append(rb);
+  const tb = $('div', 'box');
+  tb.append($('h2', null, tab.label));
+  const corr = tab.kind === 'corr';
+  const sc = $('div', 'tablebox'); sc.append(corr ? corrTable(tab) : mainTable(tab)); tb.append(hscroll(sc));
+  const R0 = ROWS[tab.rows[0]];
+  tb.append($('p', 'note', corr ? corrNote(R0) : `Mean (SD) of the ${R0.n} participants. p: ${DESIGN}` +
+    (DATA.nPerm ? `, exact p-values from all ${DATA.nPerm.toLocaleString('en')} sign-flip permutations` : '') +
+    `; bold: p ≤ ${ALPHA}. Hover a row, a value or a p-value to see its figure and statistics; click to keep them.`));
+  content.append(tb);
+  const det = $('details', 'box');
+  det.append($('summary', null, 'Values per participant'));
+  const ps = $('div', 'tablebox'); ps.append(corr ? corrPeopleTable(tab) : peopleTable(tab)); det.append(hscroll(ps));
+  const dl = $('button', 'btn', 'Download these values (CSV)'); dl.type = 'button'; dl.style.marginTop = '8px';
+  dl.addEventListener('click', () => download(tab.label.replace(/[\\/:*?"<>|]/g, '') + '.csv', corr ? corrCsv(tab) : csvOf(tab)));
+  det.append(dl);
+  content.append(det);
+  showRow(tab.rows[0]);
+  paint();
+  save();
+}
+document.getElementById('tabMethods').addEventListener('click', () => { nav.top = 'methods'; render(); });
+document.getElementById('tabResults').addEventListener('click', () => { nav.top = 'results'; render(); });
+document.getElementById('brand').textContent = DATA.title;
+document.getElementById('sub').textContent = DATA.subtitle;
+document.getElementById('foot').innerHTML = DATA.footer;
+render();
+</script>
+</body>
+</html>
